@@ -21,26 +21,6 @@
 static char rcsid [] = "$Header$";
  */
 
-/*
- * (c) copyright 1987, Delft University of Technology
- * Delft, The Netherlands
- *
- * This software remains the property of the Delft University of Tech.
- * The software is a part of the Delft Ada Compiler
- *
- * Permission to use, sell, duplicate or disclose the software
- * must be obtained, in writing, from the Delft University of Tech.
- *
- * For further information contact
- *
- *	Jan van Katwijk
- *	Department of Computer Science
- *	Delft University of Technology
- *	julianalaan 132 
- *	2628 BL Delft
- *	The Netherlands.
- *
- */
 
 /**************************** type definitions *************************/
 

@@ -1,22 +1,5 @@
 
 /*
- * (c) copyright 1986, 1987, 1988, Delft University of Technology
- * Delft, The Netherlands
- *
- *
- * This software remains the property of the Delft University of Tech.
- * The software is a part of the Delft Ada Subset Compiler
- *
- * Permission to use, sell, duplicate or disclose the software
- * must be obtained, in writing, from the Delft University of Tech.
- *
- * For further information contact
- *	Jan van Katwijk
- *	Department of Mathematics and Informatics
- *	Delft University of Technology
- *	julianalaan 132 Delft The Netherlands.
- *
- *
  * 	Code is generated in two walks. The first one (possible empty)
  *	generates code resulting from pre_computing nodes,
  *	the second walk generates the normal code.

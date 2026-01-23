@@ -1,22 +1,3 @@
-
-/*
- * (c) copyright 1987, Delft University of Technology
- * Delft, The Netherlands
- *
- *
- * This software remains the property of the Delft University of Tech.
- * The software is a part of the Delft Ada Subset Compiler
- *
- * Permission to use, sell, duplicate or disclose the software
- * must be obtained, in writing, from the Delft University of Tech.
- *
- *	J van Katwijk/W.J. Toetenel
- *	Department of Mathemetics and Informatics
- *	Delft University of Technology
- *	julianalaan 132 Delft The Netherlands.
- *
- */
-
 #include	"includes.h"
 
 bool adb_control ();

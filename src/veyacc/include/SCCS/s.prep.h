@@ -14,19 +14,6 @@
  */
 
 
-/*
- *
- *	J van Katwijk
- *	Delft University of Technology,
- *	Department of Mathematics,
- *	132 Julianalaan
- *	Delft, The Netherlands
- *
- *	See for a functional description:
- *
- *	SIGPLAN NOTICES
- *	October 1983, 18 (10) pp 12 .. 16
- */
 #define	TRUE	1
 #define	FALSE	0
 

@@ -1,21 +1,3 @@
-/*
- * (c) copyright 1986, Delft University of Technology
- * Delft, The Netherlands
- *
- * This software remains the property of the Delft University of Tech.
- * The software is a part of the Delft Ada Subset Compiler
- *
- * Permission to use, sell, duplicate or disclose the software
- * must be obtained, in writing, from the Delft University of Tech.
- *
- * For further information contact
- *	Jan van Katwijk
- *	Department of Mathematics and Informatics
- *	Delft University of Technology
- *	julianalaan 132 Delft The Netherlands.
- *
- */
-
 #include	"../h/print.h"
 #include	<stdio.h>
 #include	"../h/tree.h"
