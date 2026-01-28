@@ -417,7 +417,7 @@ extern	ac	bsf_type	();
 extern	ac	rootfilter	();
 extern	ac	CONST_TYPE	();
 extern	bool	arr_typesmatching	();
-extern	ac	select		();
+extern	ac	select		(ac	t1, char *tag, int kind);
 extern	ac	c_object	();
 extern	void	insert_all	();
 extern	ac	get_formal	();

@@ -18,7 +18,7 @@ int verbose = 0;
 #define PRINTVERBOSE if (verbose) printf
 
 extern	char	*mktemp		();
-FILE	*yyin;
+extern FILE	*yyin;
 FILE	*outfile;
 char	*m_prog;
 char	*standard_tree	= "std_ps.t";
@@ -322,7 +322,7 @@ void	dump_core ()
 {
 	printf ("Call a UNIX/Ada expert, unrecoverable error\n");
 	signal (4, 0);
-	_cleanup ();
+	fflush (NULL);
 	abort ();
 }
 

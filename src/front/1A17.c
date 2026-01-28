@@ -1,14 +1,4 @@
 #include	"includes.h"
-/*
- *	Forward (static) declarations
- */
-static	bool	discr_with_def	();
-static	bool	defconstraints	();
-static	bool	const_type	();
-static	ac	do_select	();
-static	ac	fld_solve	();
-static	ac	loop_of	();
-
 
 
 /*
@@ -359,26 +349,6 @@ ac	x;
 }
 
 /*
- *	Check whether or not type x is sufficiently
- *	constrained to allow the creation of objects
- */
-ac	CONST_TYPE (t, a, s)
-ac	t;
-char	*s;
-char	*a;
-{
-	static bool const_type ();
-
-	if (t == NULL)
-	   return std_integer;
-
-	if (!const_type (t)) {
-	   error (s, a);
-	   return std_integer;
-	}
-	return t;
-}
-/*
  *	is type x sufficently constrained
  *	to appear as object or component type
  */
@@ -417,6 +387,24 @@ ac	x;
 	      return TRUE;
 	}
 }
+/*
+ *	Check whether or not type x is sufficiently
+ *	constrained to allow the creation of objects
+ */
+ac	CONST_TYPE (t, a, s)
+ac	t;
+char	*s;
+char	*a;
+{
+	if (t == NULL)
+	   return std_integer;
+
+	if (!const_type (t)) {
+	   error (s, a);
+	   return std_integer;
+	}
+	return t;
+}
 
 /*
  *	are types t1 and t2 matching according to LRM for use in a type conv
@@ -444,6 +432,75 @@ ac	t1,
 	}
 	return (ind1 == NULL && ind2 == NULL &&
 	      eq_types (g_elemtype (t1), g_elemtype (t2)) );
+}
+
+/*
+ *	find a field in a record
+ *	or any other list of components
+ */
+static
+ac	fld_solve (x, y)
+ac	x;
+char	*y;
+{
+	ac	t,
+		a;
+
+	FORALL (t, x) {
+	   if (g_d (t) == XOBJECT)
+	      if (eq_tags (g_tag (t), y))
+	         return t;
+
+	   if (g_d (t) == XVARIANT) {
+	      a = fld_solve (g_ffield (t), y);
+	      if (a != NULL)
+	         return a;
+	   }
+	}
+
+	return NULL;
+}
+
+static
+ac	do_select (d, tag)
+ac	d;
+char	*tag;
+{
+	ac	t;
+
+	while (TRUE) {
+	   if (d == NULL)
+	      return NULL;
+
+	   switch (g_d (d)) {
+	      case XRECTYPE:
+		 return fld_solve (g_ffield (d), tag);
+
+	      case XINCOMPLETE:
+		 t = fld_solve (g_fidiscr (d), tag);
+		 if (t != NULL)
+		    return t;
+		 d = g_complete (d);
+		 break;
+
+	      case XPRIVTYPE:
+		 t = fld_solve (g_fpdiscr (d), tag);
+		 if (t != NULL)
+		     return t;
+		 else
+		    if (in_spec (d))
+		       d = g_impl (d);
+		    else
+		       d = NULL;
+		 break;
+
+	      case XTASKTYPE:
+		 return loc_lookup (d, tag);
+
+	      default:
+		 return NULL;
+	   }
+	}
 }
 
 /*
@@ -491,75 +548,6 @@ int	kind;
 	   return loc_lookup (t1, tag);
 	else
 	   return loc_char   (t1, tag);
-}
-
-static
-ac	do_select (d, tag)
-ac	d;
-char	*tag;
-{
-	ac	t;
-
-	while (TRUE) {
-	   if (d == NULL)
-	      return NULL;
-
-	   switch (g_d (d)) {
-	      case XRECTYPE:
-		 return fld_solve (g_ffield (d), tag);
-
-	      case XINCOMPLETE:
-		 t = fld_solve (g_fidiscr (d), tag);
-		 if (t != NULL)
-		    return t;
-		 d = g_complete (d);
-		 break;
-
-	      case XPRIVTYPE:
-		 t = fld_solve (g_fpdiscr (d), tag);
-		 if (t != NULL)
-		     return t;
-		 else
-		    if (in_spec (d))
-		       d = g_impl (d);
-		    else
-		       d = NULL;
-		 break;
-
-	      case XTASKTYPE:
-		 return loc_lookup (d, tag);
-
-	      default:
-		 return NULL;
-	   }
-	}
-}
-
-/*
- *	find a field in a record
- *	or any other list of components
- */
-static
-ac	fld_solve (x, y)
-ac	x;
-char	*y;
-{
-	ac	t,
-		a;
-
-	FORALL (t, x) {
-	   if (g_d (t) == XOBJECT)
-	      if (eq_tags (g_tag (t), y))
-	         return t;
-
-	   if (g_d (t) == XVARIANT) {
-	      a = fld_solve (g_ffield (t), y);
-	      if (a != NULL)
-	         return a;
-	   }
-	}
-
-	return NULL;
 }
 
 ac	c_object (x)

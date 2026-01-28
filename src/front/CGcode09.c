@@ -1,73 +1,106 @@
 #include	"includes.h"
-/*
- *	Forward (static) declarations
- */
-static	void	agg_table	();
-static	void	rec_table	();
-static	void	arr_table	();
-static	void	do_nam_agg	();
-static	void	do_pos_agg	();
-static	void	do_rec_aggr	();
-static	void	make_sub	();
-static	bool	is_pos_agg	();
-static	void	make_rec_desc	();
-static	void	make_arr_desc	();
-static	void	lowerbound	();
-static	void	upperbound	();
-static	void	lxval		();
-static	void	uxval		();
-static	void	elementsize	();
-static	ac	get_selectedpath	();
-static	int	val_of_discr	();
-static	void	OFFSET		();
-static	void	CHECK_CODE	();
-static	void	Obj_c		();
-static	void	ch_ranges	();
-static	void	ARRA_ASSIGNCODE	();
-static	ac	get_primary	();
-static	void	sm_code		();
-static	bool	has_no_descr	();
-static	ac	agg_elem	();
-static	void	c_a_elem	();
-static	void	make_table	();
-static	bool	is_positional	();
-static	ac	arr_aggelem	();
-static	void	receldescriptor	();
+
 
 /*
  *	local "static" functions used in the module
  */
 
-/*
- *	AGGREGATES:
- *	For each aggregate a function is generated unless
- *	the structure of the aggregate is that simple that
- *	the aggregate can be implemented as a table
- */
-
-void	gen_aggregate (agg, cttype)
-ac	agg,
-	cttype;
+static
+int	val_of_discr (ac aggr,
+                      ac discr)
 {
-	ASSERT (agg != NULL, ("gen_aggregate:1"));
+	ac	walker;
+	ac	t;
+	ac	others = NULL;
 
-	if (is_table (agg)) {
-	   agg_table (agg);
+	FORALL (walker, g_fcompas (aggr)) {
+	   FORALL (t, g_fcompchoice (t)) {
+	      if (is_others (t))
+	         abort ();
+	      if (g_fentity (g_primary (g_frang_exp (t))) == discr) {
+		 return ord (g_fentity (g_primary (g_compexpr (walker))));
+	      }
+	   }
+
 	}
-	else
-	   make_sub (agg);
+	ASSERT (FALSE, ("x1"));
+}
+
+/*
+ *	Simple support functions, not used outside this module
+ */
+static
+ac	get_selectedpath (ac variant_node,
+                          ac disc,
+                          ac aggregate)
+{
+	ac	others	= NULL;
+	ac	tmp;
+	int	disc_value;
 
-	s_flags (agg, g_flags (agg) | ORDR_EVAL | LARG_EVAL);
+	if (variant_node == NULL)
+	   return NULL;
+
+	disc_value = val_of_discr (aggregate, disc);
+
+	while (variant_node != NULL) {
+	   tmp = g_varchoice (variant_node);
+	   while (tmp != NULL) {
+	      if (is_others (tmp))
+	         others = variant_node;
+	      else
+	      if ((loval (tmp) <= disc_value) &&
+	          (disc_value <= hival (tmp) ))
+	         return variant_node;
+
+	      tmp = g_next (tmp);
+	   }
+
+	   variant_node = g_next (variant_node);
+	}
+
+	return NULL;
 }
 
 static
-void	agg_table (x)
-ac	x;
+void	c_a_elem (expr, lab)
+ac	expr;
+int	lab;
 {
-	if (is_recagg (x))
-	   rec_table (x);
-	else
-	   arr_table (x);
+	/* only the simple case now	*/
+	switch (sz_val (g_exptype (expr), NULL)) {
+	   case TBYTESIZE:
+	      PUT (DEF_BYTE, getvalue (expr));
+	      break;
+
+	   case TWORDSIZE:
+	      PUT (DEF_WORD, getvalue (expr));
+	      break;
+
+	   case TLONGSIZE:
+	      PUT (DEF_LONG, getvalue (expr));
+	      break;
+
+	   DEFAULT (("c_a_elem, illegal type"));
+	
+	}
+}
+
+static
+ac	agg_elem (agg, elem)
+ac	agg;
+ac	elem;
+{
+	ac	cp,
+		pp;
+
+	FORALL (cp, g_fcompas (agg))
+	   FORALL (pp, g_fcompchoice (cp)) {
+	      if (g_fentity (g_primary (g_frang_exp (pp))) == elem)
+	           return cp;
+	   }
+
+	ASSERT (FALSE, ("agg_elem: no element found"));
 }
 
 static
@@ -111,6 +144,38 @@ ac	agg;
 
 	OUTEVEN;
 	OUTTEXT;
+}
+
+bool	is_positional_func (cp)
+ac	cp;
+{
+	return g_fcompchoice (cp) == NULL;
+}
+
+/*
+ *	preliminary versions of some selecting routines:
+ */
+
+static
+ac	arr_aggelem (agg, low, i)
+ac	agg;
+int	low;
+int	i;
+{
+	ac	cp;
+	int	cnt = 0;
+
+	FORALL (cp, g_fcompas (agg)) {
+	   if (is_positional_func (cp)) {
+	      if (cnt == i)
+	         return cp;
+	   }
+	   else
+	   if (isinchoices (low + i, g_fcompchoice (cp)))
+		return cp;
+
+	   cnt ++;
+	}
 }
 
 static
@@ -168,6 +233,187 @@ ac	agg;
 	PUT (DEF_LONG, high);
 
 	OUTTEXT;
+}
+
+static
+void	agg_table (x)
+ac	x;
+{
+	if (is_recagg (x))
+	   rec_table (x);
+	else
+	   arr_table (x);
+}
+
+/*
+ *	compute the "lowerbound" of the array aggregate descriptor
+ *	Two cases are possible:
+ *	 the aggregate value is completely specified (i.e. no others)
+ *	 in this case the lowerbound value can be taken from
+ *	 the (compiler-constructed) constraint directly
+ *	 The expression being static can be asserted
+ *	- the aggregate contains an others choice
+ *	 Donot bother, take the value from the descriptor
+ *	 that is passed as parameter to the implementing function
+ */
+static
+void	lowerbound (agg)
+ac	agg;
+{
+	ac	fr;
+
+	if (g_AGG_Doff (agg) == 0) {	/* no private descriptor	*/
+	   DEREF (LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level, PAR_1, ADDRESS);
+	         ICON (LD_ARR_I_X, LONG, "");
+	}
+	else
+	{  fr = g_frange (g_constraint (basefilter (g_aggtype (agg))));
+           if (g_frang_exp (fr) == NULL)
+              ICON (loval (fr), LONG, "");
+           else
+              code (g_frang_exp (fr), VAL, LONG);
+        }
+}
+
+static
+void	upperbound (agg)
+ac	agg;
+{
+	ac	fr;
+
+	if (g_AGG_Doff (agg) == 0) {	/* no private desc		*/
+	   DEREF (LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level, PAR_1, P_LONG);
+	         ICON (LD_ARR_I_X + LO_LD_ARR_SIZE, LONG, "");
+	}
+	else
+	{ fr = g_frange (g_constraint (basefilter (g_aggtype (agg))));
+	  if (g_frang_exp (fr) == NULL)
+	     ICON (hival (fr), LONG, "");
+	  else
+	     code (g_next (g_frang_exp (fr)), VAL, LONG);
+	}
+}
+
+/*
+ *	Obj_c is used as an actual parameter somewhere here
+ */
+static
+void	Obj_c (x)
+int x;
+{
+	LOC_OBJECT (curr_level, x, LONG);
+}
+
+static
+void	ch_ranges (off, rl)
+int	off;
+ac	rl;
+{
+	if (is_others (rl)) {
+	   ICON (TRUE, LONG, "");
+	   return;
+	}
+	v_ranges (rl, Obj_c, off);
+}
+
+static
+void	CHECK_CODE (off, cp, l, d)
+int	off;
+ac	cp;			/* compass		*/
+int	l;			/* false lab number	*/
+int	d;			/* lwb + d (positional)	*/
+{
+	ac	ch_r;
+
+	if (g_next (cp) == NULL)	/* last one, do not check	*/
+	   return;
+
+	ch_r = g_fcompchoice (cp);
+	new_expr ();
+	CBRANCH ();
+	   if (ch_r == NULL) {		/* positional		*/
+	      EQ (LONG);
+	         LOC_OBJECT (curr_level, off, LONG);
+	         PLUS (LONG);
+	            ICON (d, LONG, "");
+	            DEREF (LONG);
+	               PLUS (P_LONG);
+	                  PAR_OBJECT (curr_level, PAR_1, ADDRESS);
+	                  ICON (LD_ARR_I_X, LONG, "");
+	   }
+	   else
+	   ch_ranges (off, ch_r);
+	   ICON (l, ADDRESS, "");
+}
+
+static
+void	elementsize (agg)
+ac	agg;
+{
+	ac	elt;
+
+	elt = g_elemtype (root_type (g_aggtype (agg)));
+	if (hasstatsize (elt)) {
+	   ICON (getvalsize (basefilter (elt), NULL), LONG, "");
+	}
+	else
+	{  DEREF (LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level, PAR_1, P_LONG);
+	         ICON (LD_ARR_ESIZE, LONG, "");
+	}
+}
+
+static
+void	ARRA_ASSIGNCODE (agg, expr, t_offs, iter, eltype)
+ac	agg;
+ac	expr;
+int	t_offs;
+int	iter;
+ac	eltype;
+{
+	if (is_small (expr)) {
+	   int extype = pcc_type_of (expr);
+	   new_expr ();
+	   pre_code (expr);
+	   ASSIGN (extype);
+	      DEREF (extype);
+	         PLUS (pointer_type_of (extype));
+	            LOC_OBJECT (curr_level, t_offs, pointer_type_of (extype));
+	            MUL (LONG);
+	               MINUS (LONG);
+	                  LOC_OBJECT (curr_level, iter, LONG);
+		          lowerbound (agg);
+		       elementsize (agg);
+	         code (expr, VAL, extype);
+	}
+	else
+	{  new_expr ();
+	   pre_code (expr);
+	   CALL (LONG);
+	      ICON (0, PF_INT, __ASSIGN);
+	      PARCOM ();
+	         PARCOM ();
+		    DESCRIPTOR (eltype);
+	            CALL (ADDRESS);
+	               ICON (0, PF_INT, __CHECK);
+	               PARCOM ();
+	                  PARCOM ();
+	                     DESCRIPTOR (expr);
+			     DESCRIPTOR (eltype);
+	                  code (expr, VAL, NOTYPE);
+	         PLUS (ADDRESS);
+	            LOC_OBJECT (curr_level, t_offs, ADDRESS);
+	            MUL (LONG);
+	               MINUS (LONG);
+	                  LOC_OBJECT (curr_level, iter, ADDRESS);
+			  lowerbound (agg);
+	               elementsize (agg);
+	}
 }
 
 /*
@@ -296,6 +542,37 @@ int	offset,
 	deflab (endlab);
 }
 
+static
+void	OFFSET (component)
+ac	component;
+{
+	if (g_OBJ_alloc (component) == XNO_TABLE)
+	   ICON (g_OBJ_offset (component), LONG, "");
+	else
+	{  DEREF (LONG);
+	      PLUS (P_LONG);
+	         if (g_OBJ_alloc (component) == XTYPE_TABLE)
+	            DESCRIPTOR (root_type (get_type (component)));
+	         else
+	            PAR_OBJECT (curr_level, PAR_1, P_LONG);
+	      ICON (g_OBJ_offset (component), LONG, "");
+	}
+}
+
+static
+void	receldescriptor (x)
+ac	x;
+{
+	ASSERT (g_d (x) == XOBJECT, ("record element descr "));
+	if (has_call_block (get_type (x))) {
+	   PLUS (P_LONG);
+	      PAR_OBJECT (curr_level, PAR_1, P_LONG);
+	      ICON (cboffset (get_type (x)), LONG, "");
+	}
+	else
+	   DESCRIPTOR (get_type (x));
+}
+
 /*
  *	doe een record aggregate
  */
@@ -355,6 +632,197 @@ int	temploc,
 	/* stack adjust still to be done		*/
 	   }
 	}
+}
+
+/*
+ * simple predicate
+ */
+static
+bool	is_pos_agg (agg)
+ac	agg;
+{
+	ac	cp;
+
+	FORALL (cp, g_fcompas (agg)) {
+	   if (g_fcompchoice (cp) != NULL)
+	      return FALSE;
+	}
+
+	return TRUE;
+}
+
+/*
+ *	make a record descriptor (if one is needed)
+ */
+static
+ac	first_elem (t)
+ac	t;
+{
+	if (t == NULL)
+	   return NULL;
+
+	switch (g_d (t)) {
+	   case XRECTYPE:
+	      return g_ffield (t);
+
+	   case XINCOMPLETE:
+	      return g_fidiscr (t);
+
+	   case XPRIVTYPE:
+	      return g_fpdiscr (t);
+
+	   default:
+	      ASSERT (FALSE, ("first-elem:0"));
+	}
+}
+
+static
+void	make_rec_desc (agg)
+ac	agg;
+{
+	ac	cp,
+		type,
+		t2,
+		x;
+	int	cetype,
+		i = 0;
+
+	ASSERT (agg != NULL, ("make_rec_desc:1"));
+
+	type = bf_type (g_aggtype (agg));
+	t2   = root_type (type);
+
+	if (g_REC_forms (t2) == 0)
+	   return;
+
+	new_expr ();
+	ASSIGN (LONG);
+	   DEREF (LONG);
+	      PAR_OBJECT (curr_level, PAR_1, P_LONG);
+	   ICON (VD_REC, LONG, "");
+
+	new_expr ();
+	ASSIGN (P_LONG);
+	   /* Careful, What means + and what means - in offsets	*/
+	   DEREF (P_LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level, PAR_1, P_LONG);
+	         ICON (LD_REC_TTP, LONG, "");
+	   DESCRIPTOR (t2);
+
+	ASSERT (t2 != NULL && g_d (t2) == XRECTYPE, ("make_rec_desc:0"));
+
+	FORALL (cp, first_elem (type)) {
+	   if (g_d (cp) != XOBJECT)
+	      break;
+
+	   if (!is_discr (cp))
+	      break;
+
+	   x = agg_elem (agg, cp);
+	   cetype = pcc_type_of (g_compexpr (x));
+
+	   new_expr ();
+	   pre_code (g_compexpr (x));
+	   ASSIGN (LONG);
+	      DEREF (cetype);
+		 PLUS (pointer_type_of (cetype));
+	            PAR_OBJECT (curr_level, PAR_1, pointer_type_of (cetype));
+		    ICON (LD_RECDISCR + (i * TLONGSIZE), LONG, "");
+	      code (g_compexpr (x), VAL, cetype);
+
+	   i ++;
+	}
+
+	new_expr ();
+	CALL (VOID);
+	   ICON (0, PF_INT, __DC_CHECK);
+	   PAR_OBJECT (curr_level, PAR_1, ADDRESS);
+}
+
+static
+void	lxval (x)
+ac	x;
+{
+	ASSERT (x != NULL && g_d (x) == XRANGE, ("lxval: %d no range", g_d (x)));
+        if (is_static (x))
+           ICON (loval (x), LONG, "");
+        else
+        {  ASSERT (g_frang_exp (x) != NULL, ("lxval: expr = NULL"));
+           code (g_frang_exp (x), VAL, LONG);
+	}
+}
+
+static
+void	uxval (x)
+ac	x;
+{
+	ASSERT (x != NULL && g_d (x) == XRANGE, ("uxval: %d no range", g_d (x)));
+        if (is_static (x))
+           ICON (loval (x), LONG, "");
+        else
+	{  ASSERT (g_frang_exp (x) != NULL, ("uxval: expr = NULL"));
+           code (g_next (g_frang_exp (x)), VAL, LONG);
+	}
+}
+
+/*
+ *	make an array descriptor (always needed)
+ */
+static
+void	make_arr_desc (agg)
+ac	agg;
+{
+	ac	cp;
+	int	i = 0;
+	ac	type;
+
+	ASSERT (agg != NULL && g_aggtype (agg) != NULL, ("make_arr_desc:1"));
+
+	type = bf_type (g_aggtype (agg));
+
+	/* If we cannot make a descriptor, well, just do not	*/
+	if (g_AGG_Doff (agg) == 0)
+	   return;
+
+	new_expr ();
+	ASSIGN (LONG);
+	   DEREF (LONG);
+	      PAR_OBJECT (curr_level,PAR_1, P_LONG);
+	   ICON (VD_ARR, LONG, "");
+
+	new_expr ();
+	ASSIGN (P_LONG);
+	   DEREF (P_LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level,PAR_1, P_LONG);
+	         ICON (LD_ARR_TTP,LONG, "");
+	   DESCRIPTOR (type);
+
+	/* are we lucky, we know DAS is restricted to one dimensional	*/
+	/* array aggregates						*/
+	/* take the (m .. n => e) case also into account                */
+	/* implying that lower and upperbound do not have to be static  */
+	new_expr ();
+	ASSIGN (LONG);
+	   DEREF (LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level,PAR_1, P_LONG);
+	   	 ICON (LD_ARR_I_X, LONG, "");
+           lxval (g_frange (g_constraint (g_aggtype (agg))));
+
+	new_expr ();
+	ASSIGN (LONG);
+	   DEREF (LONG);
+	      PLUS (P_LONG);
+	         PAR_OBJECT (curr_level,PAR_1, ADDRESS);
+	         ICON (LD_ARR_I_X + LO_LD_ARR_SIZE, LONG, "");
+           uxval (g_frange (g_constraint (g_aggtype (agg))));
+
+	new_expr ();
+	CALL (VOID);
+	   ICON (0, PF_INT, __IC_CHECK);
+	   PAR_OBJECT (curr_level,PAR_1, ADDRESS);
 }
 
 /*
@@ -478,168 +946,87 @@ ac	agg;
 }
 
 /*
- * simple predicate
+ *	AGGREGATES:
+ *	For each aggregate a function is generated unless
+ *	the structure of the aggregate is that simple that
+ *	the aggregate can be implemented as a table
  */
-static
-bool	is_pos_agg (agg)
-ac	agg;
+
+void	gen_aggregate (agg, cttype)
+ac	agg,
+	cttype;
 {
-	ac	cp;
+	ASSERT (agg != NULL, ("gen_aggregate:1"));
 
-	FORALL (cp, g_fcompas (agg)) {
-	   if (g_fcompchoice (cp) != NULL)
-	      return FALSE;
+	if (is_table (agg)) {
+	   agg_table (agg);
 	}
+	else
+	   make_sub (agg);
 
-	return TRUE;
+	s_flags (agg, g_flags (agg) | ORDR_EVAL | LARG_EVAL);
 }
 
-/*
- *	make a record descriptor (if one is needed)
- */
 static
-ac	first_elem (t)
-ac	t;
+ac	get_primary (x)
+ac	x;
 {
-	if (t == NULL)
+	if (x == NULL)
 	   return NULL;
 
-	switch (g_d (t)) {
-	   case XRECTYPE:
-	      return g_ffield (t);
+	while (g_d (x) == XEXP)
+	   x = g_primary (x);
 
-	   case XINCOMPLETE:
-	      return g_fidiscr (t);
+	if (g_d (x) == XNAME)
+	   return g_fentity (x);
 
-	   case XPRIVTYPE:
-	      return g_fpdiscr (t);
-
-	   default:
-	      ASSERT (FALSE, ("first-elem:0"));
-	}
-}
-
-static
-void	make_rec_desc (agg)
-ac	agg;
-{
-	ac	cp,
-		type,
-		t2,
-		x;
-	int	cetype,
-		i = 0;
-
-	ASSERT (agg != NULL, ("make_rec_desc:1"));
-
-	type = bf_type (g_aggtype (agg));
-	t2   = root_type (type);
-
-	if (g_REC_forms (t2) == 0)
-	   return;
-
-	new_expr ();
-	ASSIGN (LONG);
-	   DEREF (LONG);
-	      PAR_OBJECT (curr_level, PAR_1, P_LONG);
-	   ICON (VD_REC, LONG, "");
-
-	new_expr ();
-	ASSIGN (P_LONG);
-	   /* Careful, What means + and what means - in offsets	*/
-	   DEREF (P_LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level, PAR_1, P_LONG);
-	         ICON (LD_REC_TTP, LONG, "");
-	   DESCRIPTOR (t2);
-
-	ASSERT (t2 != NULL && g_d (t2) == XRECTYPE, ("make_rec_desc:0"));
-
-	FORALL (cp, first_elem (type)) {
-	   if (g_d (cp) != XOBJECT)
-	      break;
-
-	   if (!is_discr (cp))
-	      break;
-
-	   x = agg_elem (agg, cp);
-	   cetype = pcc_type_of (g_compexpr (x));
-
-	   new_expr ();
-	   pre_code (g_compexpr (x));
-	   ASSIGN (LONG);
-	      DEREF (cetype);
-		 PLUS (pointer_type_of (cetype));
-	            PAR_OBJECT (curr_level, PAR_1, pointer_type_of (cetype));
-		    ICON (LD_RECDISCR + (i * TLONGSIZE), LONG, "");
-	      code (g_compexpr (x), VAL, cetype);
-
-	   i ++;
-	}
-
-	new_expr ();
-	CALL (VOID);
-	   ICON (0, PF_INT, __DC_CHECK);
-	   PAR_OBJECT (curr_level, PAR_1, ADDRESS);
+	return x;
 }
 
 /*
- *	make an array descriptor (always needed)
+ *	generate an argument for the checking function
+ *	always a LONG result
  */
 static
-void	make_arr_desc (agg)
-ac	agg;
+void	sm_code (exp, val)
+ac	exp;
+int	val;
 {
-	ac	cp;
-	int	i = 0;
-	ac	type;
+	ac	pr;
 
-	ASSERT (agg != NULL && g_aggtype (agg) != NULL, ("make_arr_desc:1"));
+	pr = get_primary (exp);
 
-	type = bf_type (g_aggtype (agg));
+	/* if the primary is an object and this object is a
+	 * discriminant in a record type, then we cannot use code
+	 * to generate the actual code. ( noalloc for discrs.)
+	 * Now we use the offset in the value_descriptor
+	 * i.e. obj -> OBJ_offset and the address of the value_
+	 * descriptor i.e. parameter 3.
+	 * otherwise we generate code by means of code ()
+	 */
 
-	/* If we cannot make a descriptor, well, just do not	*/
-	if (g_AGG_Doff (agg) == 0)
-	   return;
+	if (g_d (pr) == XOBJECT)
+	   if (is_discr (pr)) {
+	      DEREF (LONG);
+		 PLUS (ADDRESS);
+		    PAR_OBJECT (curr_level,PAR_3,ADDRESS);
+		    ICON (g_OBJ_offset (pr), LONG, "");
+	      return;
+	   }
+	code (exp,val, LONG);
+}
+
+static
+bool	has_no_descr (exp)
+ac	exp;
+{
+	ac	pr;
 
-	new_expr ();
-	ASSIGN (LONG);
-	   DEREF (LONG);
-	      PAR_OBJECT (curr_level,PAR_1, P_LONG);
-	   ICON (VD_ARR, LONG, "");
+	pr = get_primary (exp);
+	if (g_d (pr) != XAGGREGATE)
+	   return FALSE;
 
-	new_expr ();
-	ASSIGN (P_LONG);
-	   DEREF (P_LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level,PAR_1, P_LONG);
-	         ICON (LD_ARR_TTP,LONG, "");
-	   DESCRIPTOR (type);
-
-	/* are we lucky, we know DAS is restricted to one dimensional	*/
-	/* array aggregates						*/
-	/* take the (m .. n => e) case also into account                */
-	/* implying that lower and upperbound do not have to be static  */
-	new_expr ();
-	ASSIGN (LONG);
-	   DEREF (LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level,PAR_1, P_LONG);
-	   	 ICON (LD_ARR_I_X, LONG, "");
-           lxval (g_frange (g_constraint (g_aggtype (agg))));
-
-	new_expr ();
-	ASSIGN (LONG);
-	   DEREF (LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level,PAR_1, ADDRESS);
-	         ICON (LD_ARR_I_X + LO_LD_ARR_SIZE, LONG, "");
-           uxval (g_frange (g_constraint (g_aggtype (agg))));
-
-	new_expr ();
-	CALL (VOID);
-	   ICON (0, PF_INT, __IC_CHECK);
-	   PAR_OBJECT (curr_level,PAR_1, ADDRESS);
+	return has_call_block (g_aggtype (pr));
 }
 
 /*
@@ -748,380 +1135,6 @@ ac	th;
 	POP_PROC;
 }
 
-/*
- *	compute the "lowerbound" of the array aggregate descriptor
- *	Two cases are possible:
- *	 the aggregate value is completely specified (i.e. no others)
- *	 in this case the lowerbound value can be taken from
- *	 the (compiler-constructed) constraint directly
- *	 The expression being static can be asserted
- *	- the aggregate contains an others choice
- *	 Donot bother, take the value from the descriptor
- *	 that is passed as parameter to the implementing function
- */
-static
-void	lowerbound (agg)
-ac	agg;
-{
-	ac	fr;
-
-	if (g_AGG_Doff (agg) == 0) {	/* no private descriptor	*/
-	   DEREF (LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level, PAR_1, ADDRESS);
-	         ICON (LD_ARR_I_X, LONG, "");
-	}
-	else
-	{  fr = g_frange (g_constraint (basefilter (g_aggtype (agg))));
-           if (g_frang_exp (fr) == NULL)
-              ICON (loval (fr), LONG, "");
-           else
-              code (g_frang_exp (fr), VAL, LONG);
-        }
-}
-
-static
-void	upperbound (agg)
-ac	agg;
-{
-	ac	fr;
-
-	if (g_AGG_Doff (agg) == 0) {	/* no private desc		*/
-	   DEREF (LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level, PAR_1, P_LONG);
-	         ICON (LD_ARR_I_X + LO_LD_ARR_SIZE, LONG, "");
-	}
-	else
-	{ fr = g_frange (g_constraint (basefilter (g_aggtype (agg))));
-	  if (g_frang_exp (fr) == NULL)
-	     ICON (hival (fr), LONG, "");
-	  else
-	     code (g_next (g_frang_exp (fr)), VAL, LONG);
-	}
-}
-
-static
-void	lxval (x)
-ac	x;
-{
-	ASSERT (x != NULL && g_d (x) == XRANGE, ("lxval: %d no range", g_d (x)));
-        if (is_static (x))
-           ICON (loval (x), LONG, "");
-        else
-        {  ASSERT (g_frang_exp (x) != NULL, ("lxval: expr = NULL"));
-           code (g_frang_exp (x), VAL, LONG);
-	}
-}
-
-static
-void	uxval (x)
-ac	x;
-{
-	ASSERT (x != NULL && g_d (x) == XRANGE, ("uxval: %d no range", g_d (x)));
-        if (is_static (x))
-           ICON (loval (x), LONG, "");
-        else
-	{  ASSERT (g_frang_exp (x) != NULL, ("uxval: expr = NULL"));
-           code (g_next (g_frang_exp (x)), VAL, LONG);
-	}
-}
-
-static
-void	elementsize (agg)
-ac	agg;
-{
-	ac	elt;
-
-	elt = g_elemtype (root_type (g_aggtype (agg)));
-	if (hasstatsize (elt)) {
-	   ICON (getvalsize (basefilter (elt), NULL), LONG, "");
-	}
-	else
-	{  DEREF (LONG);
-	      PLUS (P_LONG);
-	         PAR_OBJECT (curr_level, PAR_1, P_LONG);
-	         ICON (LD_ARR_ESIZE, LONG, "");
-	}
-}
-
-/*
- *	Simple support functions, not used outside this module
- */
-static
-ac	get_selectedpath (ac variant_node,
-                          ac disc,
-                          ac aggregate)
-{
-	ac	others	= NULL;
-	ac	tmp;
-	int	disc_value;
-
-	if (variant_node == NULL)
-	   return NULL;
-
-	disc_value = val_of_discr (aggregate, disc);
-
-	while (variant_node != NULL) {
-	   tmp = g_varchoice (variant_node);
-	   while (tmp != NULL) {
-	      if (is_others (tmp))
-	         others = variant_node;
-	      else
-	      if ((loval (tmp) <= disc_value) &&
-	          (disc_value <= hival (tmp) ))
-	         return variant_node;
-
-	      tmp = g_next (tmp);
-	   }
-
-	   variant_node = g_next (variant_node);
-	}
-
-	return NULL;
-}
-
-static
-int	val_of_discr (ac aggr,
-                      ac discr)
-{
-	ac	walker;
-	ac	t;
-	ac	others = NULL;
-
-	FORALL (walker, g_fcompas (aggr)) {
-	   FORALL (t, g_fcompchoice (t)) {
-	      if (is_others (t))
-	         abort ();
-	      if (g_fentity (g_primary (g_frang_exp (t))) == discr) {
-		 return ord (g_fentity (g_primary (g_compexpr (walker))));
-	      }
-	   }
-
-	}
-	ASSERT (FALSE, ("x1"));
-}
-
-static
-void	OFFSET (component)
-ac	component;
-{
-	if (g_OBJ_alloc (component) == XNO_TABLE)
-	   ICON (g_OBJ_offset (component), LONG, "");
-	else
-	{  DEREF (LONG);
-	      PLUS (P_LONG);
-	         if (g_OBJ_alloc (component) == XTYPE_TABLE)
-	            DESCRIPTOR (root_type (get_type (component)));
-	         else
-	            PAR_OBJECT (curr_level, PAR_1, P_LONG);
-	      ICON (g_OBJ_offset (component), LONG, "");
-	}
-}
-
-static
-void	CHECK_CODE (off, cp, l, d)
-int	off;
-ac	cp;			/* compass		*/
-int	l;			/* false lab number	*/
-int	d;			/* lwb + d (positional)	*/
-{
-	ac	ch_r;
-
-	if (g_next (cp) == NULL)	/* last one, do not check	*/
-	   return;
-
-	ch_r = g_fcompchoice (cp);
-	new_expr ();
-	CBRANCH ();
-	   if (ch_r == NULL) {		/* positional		*/
-	      EQ (LONG);
-	         LOC_OBJECT (curr_level, off, LONG);
-	         PLUS (LONG);
-	            ICON (d, LONG, "");
-	            DEREF (LONG);
-	               PLUS (P_LONG);
-	                  PAR_OBJECT (curr_level, PAR_1, ADDRESS);
-	                  ICON (LD_ARR_I_X, LONG, "");
-	   }
-	   else
-	   ch_ranges (off, ch_r);
-	   ICON (l, ADDRESS, "");
-}
-
-/*
- *	Obj_c is used as an actual parameter somewhere here
- */
-static
-void	Obj_c (x)
-int x;
-{
-	LOC_OBJECT (curr_level, x, LONG);
-}
-
-static
-void	ch_ranges (off, rl)
-int	off;
-ac	rl;
-{
-	if (is_others (rl)) {
-	   ICON (TRUE, LONG, "");
-	   return;
-	}
-	v_ranges (rl, Obj_c, off);
-}
-
-static
-void	ARRA_ASSIGNCODE (agg, expr, t_offs, iter, eltype)
-ac	agg;
-ac	expr;
-int	t_offs;
-int	iter;
-ac	eltype;
-{
-	if (is_small (expr)) {
-	   int extype = pcc_type_of (expr);
-	   new_expr ();
-	   pre_code (expr);
-	   ASSIGN (extype);
-	      DEREF (extype);
-	         PLUS (pointer_type_of (extype));
-	            LOC_OBJECT (curr_level, t_offs, pointer_type_of (extype));
-	            MUL (LONG);
-	               MINUS (LONG);
-	                  LOC_OBJECT (curr_level, iter, LONG);
-		          lowerbound (agg);
-		       elementsize (agg);
-	         code (expr, VAL, extype);
-	}
-	else
-	{  new_expr ();
-	   pre_code (expr);
-	   CALL (LONG);
-	      ICON (0, PF_INT, __ASSIGN);
-	      PARCOM ();
-	         PARCOM ();
-		    DESCRIPTOR (eltype);
-	            CALL (ADDRESS);
-	               ICON (0, PF_INT, __CHECK);
-	               PARCOM ();
-	                  PARCOM ();
-	                     DESCRIPTOR (expr);
-			     DESCRIPTOR (eltype);
-	                  code (expr, VAL, NOTYPE);
-	         PLUS (ADDRESS);
-	            LOC_OBJECT (curr_level, t_offs, ADDRESS);
-	            MUL (LONG);
-	               MINUS (LONG);
-	                  LOC_OBJECT (curr_level, iter, ADDRESS);
-			  lowerbound (agg);
-	               elementsize (agg);
-	}
-}
-
-static
-ac	get_primary (x)
-ac	x;
-{
-	if (x == NULL)
-	   return NULL;
-
-	while (g_d (x) == XEXP)
-	   x = g_primary (x);
-
-	if (g_d (x) == XNAME)
-	   return g_fentity (x);
-
-	return x;
-}
-
-/*
- *	generate an argument for the checking function
- *	always a LONG result
- */
-static
-void	sm_code (exp, val)
-ac	exp;
-int	val;
-{
-	ac	pr;
-
-	pr = get_primary (exp);
-
-	/* if the primary is an object and this object is a
-	 * discriminant in a record type, then we cannot use code
-	 * to generate the actual code. ( noalloc for discrs.)
-	 * Now we use the offset in the value_descriptor
-	 * i.e. obj -> OBJ_offset and the address of the value_
-	 * descriptor i.e. parameter 3.
-	 * otherwise we generate code by means of code ()
-	 */
-
-	if (g_d (pr) == XOBJECT)
-	   if (is_discr (pr)) {
-	      DEREF (LONG);
-		 PLUS (ADDRESS);
-		    PAR_OBJECT (curr_level,PAR_3,ADDRESS);
-		    ICON (g_OBJ_offset (pr), LONG, "");
-	      return;
-	   }
-	code (exp,val, LONG);
-}
-
-static
-bool	has_no_descr (exp)
-ac	exp;
-{
-	ac	pr;
-
-	pr = get_primary (exp);
-	if (g_d (pr) != XAGGREGATE)
-	   return FALSE;
-
-	return has_call_block (g_aggtype (pr));
-}
-
-static
-ac	agg_elem (agg, elem)
-ac	agg;
-ac	elem;
-{
-	ac	cp,
-		pp;
-
-	FORALL (cp, g_fcompas (agg))
-	   FORALL (pp, g_fcompchoice (cp)) {
-	      if (g_fentity (g_primary (g_frang_exp (pp))) == elem)
-	           return cp;
-	   }
-
-	ASSERT (FALSE, ("agg_elem: no element found"));
-}
-
-static
-void	c_a_elem (expr, lab)
-ac	expr;
-int	lab;
-{
-	/* only the simple case now	*/
-	switch (sz_val (g_exptype (expr), NULL)) {
-	   case TBYTESIZE:
-	      PUT (DEF_BYTE, getvalue (expr));
-	      break;
-
-	   case TWORDSIZE:
-	      PUT (DEF_WORD, getvalue (expr));
-	      break;
-
-	   case TLONGSIZE:
-	      PUT (DEF_LONG, getvalue (expr));
-	      break;
-
-	   DEFAULT (("c_a_elem, illegal type"));
-	
-	}
-}
-
 static
 void	make_table (agg)
 ac	agg;
@@ -1134,51 +1147,4 @@ ac	agg;
 	   rec_table (agg);
 	else
 	   arr_table (agg);
-}
-
-static
-bool	is_positional (cp)
-ac	cp;
-{
-	return g_fcompchoice (cp) == NULL;
-}
-
-/*
- *	preliminary versions of some selecting routines:
- */
-
-static
-ac	arr_aggelem (agg, low, i)
-ac	agg;
-int	low;
-int	i;
-{
-	ac	cp;
-	int	cnt = 0;
-
-	FORALL (cp, g_fcompas (agg)) {
-	   if (is_positional (cp)) {
-	      if (cnt == i)
-	         return cp;
-	   }
-	   else
-	   if (isinchoices (low + i, g_fcompchoice (cp)))
-		return cp;
-
-	   cnt ++;
-	}
-}
-
-static
-void	receldescriptor (x)
-ac	x;
-{
-	ASSERT (g_d (x) == XOBJECT, ("record element descr "));
-	if (has_call_block (get_type (x))) {
-	   PLUS (P_LONG);
-	      PAR_OBJECT (curr_level, PAR_1, P_LONG);
-	      ICON (cboffset (get_type (x)), LONG, "");
-	}
-	else
-	   DESCRIPTOR (get_type (x));
 }

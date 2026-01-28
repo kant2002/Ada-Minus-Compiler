@@ -8,8 +8,8 @@ all:
 	cd libvy;make ${PARAM} install
 	cd treetool; make ${PARAM}
 	cd view;make ${PARAM} all
-#	cd h;make ${PARAM} 
-#	cd front;make ${PARAM} install
+	cd h;make ${PARAM} 
+	cd front;make ${PARAM} install
 #	cd cg;make ${PARAM} install
 #	cd adadep;make ${PARAM}
 #	cd rt;make ${PARAM}

@@ -127,7 +127,7 @@ ac	t;
 
 	while (t != NULL) {
 	   a_t = g_tripnext (t);
-	   cfree (t);
+	   free (t);
 	   t = a_t;
 	}
 }
