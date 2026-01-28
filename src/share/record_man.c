@@ -68,7 +68,7 @@ void	tree_init ()
 	register int i;
 
 	for (i = tree_space. tr_top; i > 0; i --)
-	    cfree (tree_space. tr_vec [i]);
+	    free (tree_space. tr_vec [i]);
 
 	low	= 0;
 	high	= MAX_INCORE - 1;
@@ -780,7 +780,7 @@ void	del_tag (x)
 ac	x;
 {
 /*	if (x != NULL)
-	   cfree (x);	*/
+	   free (x);	*/
 }
 
 short	lun_of (a)
@@ -1563,4 +1563,3 @@ register ac x, y;
 	   DEFAULT (("set_to: %d\n", g_d (x)));
 	}
 }
-
