@@ -4,7 +4,7 @@ all:
 #	cd codgen1;make ${PARAM} install
 #	cd cgyaccsrc; make ${PARAM} install
 #	cd codgen2; make ${PARAM} install
-#	cd veyacc;make ${PARAM}
+	cd veyacc;make ${PARAM}
 #	cd libvy;make ${PARAM} install
 	cd treetool; make ${PARAM}
 #	cd view;make ${PARAM} all
