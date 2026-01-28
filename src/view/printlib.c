@@ -54,7 +54,7 @@ char **argv;
 		if (cdb_libname (viewname, username, lib_name) == FALSE)
 		{
 		    printf ("No library for view: %s.%s\n", viewname, username);
-		    exit ();
+		    exit (0);
 		}
 		openlib (lib_name, R, library, &status);
 	    }

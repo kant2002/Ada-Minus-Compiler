@@ -17,7 +17,7 @@ char *argv[];
     if (argc-- == 1)
     {
 	printf (" Usage: adarm unitname[s]\n");
-	exit ();
+	exit (0);
     }
     argv++;
     while (argc--)
