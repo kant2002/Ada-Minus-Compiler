@@ -10,7 +10,7 @@ IFLAGS	= -I$(UI) -I$(O)
 
 ROOT =		/
 TARGET =	libvy.a
-DIR =		home/adacomp/lib
+DIR =		home/runner
 
 AR =		ar
 CC =		gcc
