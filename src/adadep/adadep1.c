@@ -259,7 +259,7 @@ int kind;
     	if (p_un -> u_flags & UNIT_TEXT)
     	{
     	    fprintf (stderr, "Text of unit %s has been seen more than once\n", uname);
-    	    exit ();
+    	    exit (0);
     	}
 	curunit = unodemv (curunit, p_un);
     }

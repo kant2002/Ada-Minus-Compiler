@@ -8,7 +8,7 @@
  */
 
 #include "libr.h"
-int nflags;
+extern int nflags;
 
 #define NO_CHANGE 0
 /* kinds */
@@ -63,16 +63,18 @@ struct unode
     char u_name[FNAMESIZE];
     char u_sname[FNAMESIZE];
     int u_flags;
-} *curunit, *lastunit;
+};
 
-char sfname[];		/* name of source file */
+extern struct unode *curunit, *lastunit;
+
+extern char sfname[];		/* name of source file */
 
 /*
  * A library module can be added(adadep2.c).
  * If so all units must be available, if not, missing units
  * are assumed to be found in the library
  */
-int compilation;	/* set FALSE when compilation not possible */
+extern int compilation;	/* set FALSE when compilation not possible */
 
 extern char compile_com[];	/* contains compile command with %s for the
 					source file name */

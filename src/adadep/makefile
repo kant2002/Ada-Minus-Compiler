@@ -1,6 +1,6 @@
 SHELL	= /bin/sh
 INCLUDE = ../view
-CFLAGS	= -c -O -I${INCLUDE} $(DEBUG)
+CFLAGS	= -c -O -I${INCLUDE} $(DEBUG) -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format
 YACC	= /usr/bin/yacc
 DEBUG	= 
 

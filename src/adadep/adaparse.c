@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 char source_name[100];
-int yylineno;
+extern int yylineno;
 extern char yytext[];
 extern int globalf;
 
