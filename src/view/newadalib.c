@@ -7,7 +7,7 @@
 #include <pwd.h>
 
 struct passwd *getpwuid();
-char lib_name[FNAMESIZE];
+extern char lib_name[FNAMESIZE];
 
 main (argc, argv)
 int argc;
@@ -19,7 +19,7 @@ char *argv[];
     if (argc != 3 || strchr (argv[1], '.'))
     {
 	printf ("Usage: newadalib viewname(without .) libraryname\n");
-	exit();
+	exit (0);
     }
 
     username = getlogin ();

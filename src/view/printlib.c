@@ -33,7 +33,8 @@ struct lun_list *next_llist = &start_llist;
 #define LLIST_ITER(p) for (p = start_llist .l_nlun; p; p = p -> l_nlun)
 
 short status;
-char *viewname, *username, *strrchr(), *getlogin(), lib_name[FNAMESIZE];
+char *username, *strrchr(), *getlogin();
+extern char *viewname, lib_name[FNAMESIZE];
 
 main(argc, argv)
 int argc;
@@ -54,7 +55,7 @@ char **argv;
 		if (cdb_libname (viewname, username, lib_name) == FALSE)
 		{
 		    printf ("No library for view: %s.%s\n", viewname, username);
-		    exit ();
+		    exit (0);
 		}
 		openlib (lib_name, R, library, &status);
 	    }

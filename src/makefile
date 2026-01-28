@@ -7,7 +7,7 @@ all:
 	cd veyacc;make ${PARAM}
 	cd libvy;make ${PARAM} install
 	cd treetool; make ${PARAM}
-#	cd view;make ${PARAM} all
+	cd view;make ${PARAM} all
 #	cd h;make ${PARAM} 
 #	cd front;make ${PARAM} install
 #	cd cg;make ${PARAM} install

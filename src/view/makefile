@@ -1,5 +1,5 @@
 SYSTEM = PC
-CFLAGS = -ggdb -c -D${SYSTEM} 
+CFLAGS = -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format -ggdb -c -D${SYSTEM}
 DAPSE = ../das
 HEADERS = ../h
 OBJS = cungen.o view1.o view2.o view3.o def_lib.o compload.o\
@@ -94,7 +94,7 @@ newadalib.o	:newadalib.c libr.h macros.h consts.h
 adaload.o	:adaload.c libr.h macros.h consts.h
 
 adaload	:	adaload.o viewlib.a
-		cc -o adaload adaload.o viewlib.a -ll
+		cc -o adaload adaload.o viewlib.a -lfl
 
 newadalib.o	:	libr.h macros.h consts.h
 		cc ${CFLAGS} -I${HEADERS} newadalib.c
@@ -104,4 +104,3 @@ printcdb.o	:	cdb.h consts.h
 
 printlib.o	:	libr.h macros.h consts.h
 		cc ${CFLAGS} -I${HEADERS} printlib.c
-

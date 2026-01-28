@@ -18,7 +18,7 @@ char *argv[];
     if (argc != 2 || strchr (argv[1], '.'))
     {
 	printf ("Usage: rmadalib viewname(without .)\n");
-	exit();
+	exit (0);
     }
 
     username = getlogin ();
