@@ -1276,7 +1276,7 @@ case 11:
 } break;
 case 14:
 # line 60 "treegen.y"
-{{ cfree (_ap [0]. _t1);
+{{ free (_ap [0]. _t1);
 		
 	_ap += 1;
 	}
