@@ -132,7 +132,7 @@ t_alloc (amount)
 t_free (p)
 register tdp	p;
 {
-	cfree (p);
+	free (p);
 }
 
 

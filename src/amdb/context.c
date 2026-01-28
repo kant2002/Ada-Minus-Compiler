@@ -485,7 +485,7 @@ use_unit()
 	ccommand("use");
 	for (;;) {
 		prompt("enter name ");
-		body_n = inline();
+		body_n = inline_char();
 		if (!*body_n)
 			break;
 		l_body = sel_comp_name (body_n, &bodylist);

@@ -90,7 +90,7 @@ in_range	context.c	?^in_range(body,address)$?
 in_symbols	symbol.c	?^in_symbols()$?
 index_of	record_man.c	?^short index_of (a)$?
 initialise	symbol.c	?^initialise(unit)$?
-inline	command.c	?^char *inline()$?
+inline_char	command.c	?^char *inline_char()$?
 interrupt	main.c	?^interrupt()$?
 kill	run.c	?^kill()$?
 l_alloc	record_man.c	?^ac	l_alloc (size)$?

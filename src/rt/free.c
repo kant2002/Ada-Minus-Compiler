@@ -10,8 +10,8 @@ deallocate (tup)
 {
 	tup = tup - TADDRSIZE;	/* ???? */
 	if (XD_TUP (tup) -> some_flag)
-	   cfree ((char *) XD_TUP (tup) -> descr);
+	   free ((char *) XD_TUP (tup) -> descr);
 
-	cfree ((char *) tup);
+	free ((char *) tup);
 	tup = (char *)NULL;
 }

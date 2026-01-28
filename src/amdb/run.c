@@ -155,7 +155,7 @@ char *s;
     {
 	prompt ("argument ");
 	printf ("%d :", i);
-	data = inline ();
+	data = inline_char ();
 	if (*data == '\0')
 	    break;
 	len = strlen (data) + 1;
@@ -569,7 +569,7 @@ after()
 	for (;;)
 	{
 	    prompt("enter number ");
-	    c=inline();
+	    c=inline_char();
 	    resetcrs ();
 	    if (! *c) 
 	        break;

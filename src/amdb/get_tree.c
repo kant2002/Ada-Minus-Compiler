@@ -256,7 +256,7 @@ p_init ()
 	std_init (1, st_table);
 }
 dump_core(){
-	_cleanup ();
+	fflush (NULL);
 	abort ();
 }
 sys_error (a, b)

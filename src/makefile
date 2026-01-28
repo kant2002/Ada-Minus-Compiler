@@ -14,3 +14,4 @@ all:
 	cd adadep;make ${PARAM}
 #	cd rt;make ${PARAM}
 #	cd standard;make ${PARAM} all
+#	cd amdb;make ${PARAM} install

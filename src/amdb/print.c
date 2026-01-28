@@ -49,7 +49,7 @@ cat()
 	ccommand("cat");
 	for (;;) {
 		prompt("enter unit ");
-		unit_name = inline();
+		unit_name = inline_char();
 		resetcrs ();
 		if (! *unit_name)
 		    break;

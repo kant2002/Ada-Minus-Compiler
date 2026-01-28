@@ -1168,7 +1168,7 @@ FILE *f;
 				s_d(temp,  XLITERAL);
 				s_littype (temp, g_littype (p));
 				s_val (temp, g_val (p));
-/*				cfree (p);	*/
+/*				free (p);	*/
 				*r_p = p = temp;
 			   }
 			   asc_field ("LIT_Voff");
@@ -1563,3 +1563,4 @@ register ac x, y;
 	   DEFAULT (("set_to: %d\n", g_d (x)));
 	}
 }
+

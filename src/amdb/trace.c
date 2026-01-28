@@ -123,7 +123,7 @@ int this,event;
 	    clrmenu ();
 	for (;;) {
 		prompt("enter name ");
-		name=inline();
+		name=inline_char();
 		resetcrs ();
 		if (*name=='\0')	/* leave */
 			break;

@@ -136,7 +136,7 @@ help()
 	    fcat(help_page,0);
 	    savecrs ();
 	    prompt("enter command name ");
-	    page = inline();
+	    page = inline_char();
 	    resetcrs ();
 	    if (*page == '\0')
 	    	break;
@@ -242,7 +242,7 @@ char command()
  *	read a line from standard input
  */
 
-char *inline()
+char *inline_char()
 {
 	char c,*p,*s;
 
