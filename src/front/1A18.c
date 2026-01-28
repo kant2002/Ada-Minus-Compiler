@@ -309,14 +309,252 @@ ac	x;
 	return v;
 }
 
+static
+bool	gen_xxtypes (x1, x2)
+ac	x1,
+	x2;
+{
+	if (x1 == NULL || x2 == NULL)
+	   return FALSE;
+
+	if (is_anytype (x2)) {
+	   if (match_univ (x1, x2))
+	      return TRUE;
+	}
+
+	if (is_anytype (x1)) {
+	   if (match_univ (x2, x1))
+	      return TRUE;
+	}
+
+	return x1 == x2;
+}
+
+/*
+ *	Check whether or not a type a_t is compatible
+ *	with the generic type g_t;
+ *	gen_setypes (l, x1, x2)
+ *	investigate whether or not the types x1 and
+ *	x2 are equal (in some sense). Take care:
+ *	structural equivalence applies here
+ *	gen_setypes is called for the secondary checks,
+ *	i.e. for each generic parameter type it takes
+ *	the real actual type
+ *
+ */
+static
+ac	get_act (l, x1)
+ac	l,
+	x1;
+{
+	if (x1 == NULL)
+	   return NULL;
+
+	while (l != NULL) {
+	   if (x1 == g_parname (l))
+	      return type_name (g_primary (g_nexp (l)));
+	   l = g_next (l);
+	}
+
+	return NULL;
+}
+
+static
+bool	gen_setypes (l, x1, x2)
+ac	l,
+	x1,
+	x2;
+{
+	if (x1 == x2)
+	   return TRUE;
+
+	if (x1 == NULL || x2 == NULL)
+	   return FALSE;
+
+	if (!is_type (x1) || !is_type (x2))
+	   return FALSE;
+
+	if (g_d (g_enclunit (x1)) != XGENNODE)
+	   return gen_xxtypes (base_type (x1), base_type (x2));
+
+	return gen_xxtypes (base_type (get_act (l, x1)), base_type (x2));
+}
+
+static
+bool	gen_eqsubs (l, x1, x2)
+ac	l,
+	x1,
+	x2;
+{
+	ac	p1,
+		p2;
+
+	if (x1 == NULL || x2 == NULL)
+	   return FALSE;
+
+	if (!is_sub (x2))
+	   return FALSE;
+
+	ASSERT (is_sub (x1), ("sub formal expected"));
+
+	if (!gen_setypes (l, g_rettype (x1), g_rettype (x2)))
+	   return FALSE;
+
+	p1 = f_formal (x1);
+	p2 = f_formal (x2);
+
+	while (p1 != NULL && p2 != NULL) {
+	   if (!gen_setypes (l, type_of (p1), type_of (p2)))
+	      return FALSE;
+	   p1 = g_next (p1);
+	   p2 = g_next (p2);
+	}
+	return p1 == p2; /* (== NULL) */
+}
+static
+bool	geneqtypes (l, x1, x2)
+ac	l,
+	x1,
+	x2;
+{
+	ac	t1,
+		t2,
+		t3;
+
+	if (x1 == NULL || x2 == NULL)
+	   return FALSE;
+
+	if (!is_type (x1) || !is_type (x2))
+	   return FALSE;
+
+	if (g_d (x1) == XGENPARTYPE) {
+	   switch (g_genkind (x1)) {
+	      case NEWINTTYPE:
+		   return is_someinteger (x2);
+
+	      case GENPRIVTYPE:
+		   return has_eq_and_ass (x2);
+
+	      case SCALARTYPE:
+		   return is_scalar (x2);
+
+	      default:
+		   error ("Strange generic formal type %s\n", g_tag (x1));
+		   return FALSE;
+
+	   }
+	}
+
+	if (g_d (x1) == XARRAYTYPE) {
+	   t1 = get_arraytype (x2);
+	   if (t1 == NULL)
+	      return FALSE;
+
+	   if (!gen_setypes (l, g_elemtype (x1), g_elemtype (x2)))
+	      return FALSE;
+
+	   t2 = g_findex (x1);
+	   t3 = g_findex (x2);
+
+	   while (t2 != NULL && t3 != NULL) {
+	      if (!gen_setypes (l, g_indextype (t2), g_indextype (t3)))
+	         return FALSE;
+	      t2 = g_next (t2);
+	      t3 = g_next (t3);
+	   }
+
+	   return t2 == t3; /* (== NULL) */
+	}
+
+	return FALSE;
+}
+static
+ac	find_ids (s)
+char	*s;
+{
+	return bu_name (mk_applied (mk_unresrec (s)));
+}
+
+ac	find_ops (s)
+char	*s;
+{
+	ac	t;
+
+	if (std_oper (s) == (byte)0) {
+	   error ("%s not a standard operator\n", s);
+	   return NULL;
+	}
+
+	t = mk_unresrec (s);
+	t = mk_applied (t);
+	return bu_name (t);
+}
+
+static
+ac	find_gensubs (actlist, specif, ents)	/* NULL erroneous */
+ac	actlist;
+ac	specif;
+ac	ents;
+{
+	ac	t,
+		y;
+	ac	temp = NULL;
+
+	extern bool is_stringlit ();
+
+	if (specif == NULL || ents == NULL)
+	   return NULL;
+
+	if (g_d (ents) == XLITERAL) {	/* It better be a string literal */
+	   if (!is_stringlit (ents)) {
+	      error ("Illegal form of generic subprogram parameter");
+	      return NULL;
+	   }
+	   ents = find_ops (g_val (ents)-> litvalue);
+	}
+	FORSET (y, g_types (ents)) {
+	   if (is_sub (y)) {
+	      if (gen_eqsubs (actlist, specif, y))
+	         temp = join (y, temp);
+	   }
+	   else
+	   if (is_entype (y)) {
+	      if ((y == restypes (specif) && is_paramless (specif))) {
+	         if (g_d (ents) != XNAME && g_d (ents) != XSELECT)
+	            temp = join (y, temp);
+	      }
+	   }
+	}
+	del_set (g_types (ents));
+	s_types (ents, temp);
+	if (!is_singleton (temp)) {
+	   error ("Cannot solve actual generic parameter for %s\n",
+				                         g_tag (specif));
+	   return NULL;
+	}
+
+	t = td_n_name (ents);
+	if (t == NULL) {
+	   error ("Cannot solve (2) actual for generic %s\n",
+			                                g_tag (specif));
+	   return NULL;
+	}
+
+	if (is_entype (temp)) {
+	   if (g_d (t) != XNAME || g_d (g_fentity (t)) != XENUMLIT) {
+	      error ("Cannot apply %s with arbitrary construction\n",
+		                                        g_tag (specif));
+	      return NULL;
+	   }
+	}
+
+	return t;
+}
+
 ac	td_genpar (actlist, act)
 ac	actlist;
 ac	act;
-{	static	bool	gen_eqsubs ();
-	static	bool	geneqtypes ();
-	static	ac	find_gensubs	();
-	static	ac find_ids	();
-
+{
 	ac	t1,
 		t2,
 		t3,
@@ -421,248 +659,5 @@ ac	act;
 	}
 }
 
-/*
- *	Check whether or not a type a_t is compatible
- *	with the generic type g_t;
- *	gen_setypes (l, x1, x2)
- *	investigate whether or not the types x1 and
- *	x2 are equal (in some sense). Take care:
- *	structural equivalence applies here
- *	gen_setypes is called for the secondary checks,
- *	i.e. for each generic parameter type it takes
- *	the real actual type
- *
- */
-static
-ac	get_act (l, x1)
-ac	l,
-	x1;
-{
-	if (x1 == NULL)
-	   return NULL;
-
-	while (l != NULL) {
-	   if (x1 == g_parname (l))
-	      return type_name (g_primary (g_nexp (l)));
-	   l = g_next (l);
-	}
-
-	return NULL;
-}
-
-static
-bool	gen_xxtypes (x1, x2)
-ac	x1,
-	x2;
-{
-	if (x1 == NULL || x2 == NULL)
-	   return FALSE;
-
-	if (is_anytype (x2)) {
-	   if (match_univ (x1, x2))
-	      return TRUE;
-	}
-
-	if (is_anytype (x1)) {
-	   if (match_univ (x2, x1))
-	      return TRUE;
-	}
-
-	return x1 == x2;
-}
-
-static
-bool	gen_setypes (l, x1, x2)
-ac	l,
-	x1,
-	x2;
-{
-	if (x1 == x2)
-	   return TRUE;
-
-	if (x1 == NULL || x2 == NULL)
-	   return FALSE;
-
-	if (!is_type (x1) || !is_type (x2))
-	   return FALSE;
-
-	if (g_d (g_enclunit (x1)) != XGENNODE)
-	   return gen_xxtypes (base_type (x1), base_type (x2));
-
-	return gen_xxtypes (base_type (get_act (l, x1)), base_type (x2));
-}
-
-static
-bool	geneqtypes (l, x1, x2)
-ac	l,
-	x1,
-	x2;
-{
-	ac	t1,
-		t2,
-		t3;
-
-	if (x1 == NULL || x2 == NULL)
-	   return FALSE;
-
-	if (!is_type (x1) || !is_type (x2))
-	   return FALSE;
-
-	if (g_d (x1) == XGENPARTYPE) {
-	   switch (g_genkind (x1)) {
-	      case NEWINTTYPE:
-		   return is_someinteger (x2);
-
-	      case GENPRIVTYPE:
-		   return has_eq_and_ass (x2);
-
-	      case SCALARTYPE:
-		   return is_scalar (x2);
-
-	      default:
-		   error ("Strange generic formal type %s\n", g_tag (x1));
-		   return FALSE;
-
-	   }
-	}
-
-	if (g_d (x1) == XARRAYTYPE) {
-	   t1 = get_arraytype (x2);
-	   if (t1 == NULL)
-	      return FALSE;
-
-	   if (!gen_setypes (l, g_elemtype (x1), g_elemtype (x2)))
-	      return FALSE;
-
-	   t2 = g_findex (x1);
-	   t3 = g_findex (x2);
-
-	   while (t2 != NULL && t3 != NULL) {
-	      if (!gen_setypes (l, g_indextype (t2), g_indextype (t3)))
-	         return FALSE;
-	      t2 = g_next (t2);
-	      t3 = g_next (t3);
-	   }
-
-	   return t2 == t3; /* (== NULL) */
-	}
-
-	return FALSE;
-}
-
-static
-bool	gen_eqsubs (l, x1, x2)
-ac	l,
-	x1,
-	x2;
-{
-	ac	p1,
-		p2;
-
-	if (x1 == NULL || x2 == NULL)
-	   return FALSE;
-
-	if (!is_sub (x2))
-	   return FALSE;
-
-	ASSERT (is_sub (x1), ("sub formal expected"));
-
-	if (!gen_setypes (l, g_rettype (x1), g_rettype (x2)))
-	   return FALSE;
-
-	p1 = f_formal (x1);
-	p2 = f_formal (x2);
-
-	while (p1 != NULL && p2 != NULL) {
-	   if (!gen_setypes (l, type_of (p1), type_of (p2)))
-	      return FALSE;
-	   p1 = g_next (p1);
-	   p2 = g_next (p2);
-	}
-	return p1 == p2; /* (== NULL) */
-}
-
-ac	find_ops (s)
-char	*s;
-{
-	ac	t;
-
-	if (std_oper (s) == (byte)0) {
-	   error ("%s not a standard operator\n", s);
-	   return NULL;
-	}
-
-	t = mk_unresrec (s);
-	t = mk_applied (t);
-	return bu_name (t);
-}
-
-static
-ac	find_ids (s)
-char	*s;
-{
-	return bu_name (mk_applied (mk_unresrec (s)));
-}
-
-static
-ac	find_gensubs (actlist, specif, ents)	/* NULL erroneous */
-ac	actlist;
-ac	specif;
-ac	ents;
-{
-	ac	t,
-		y;
-	ac	temp = NULL;
-
-	extern bool is_stringlit ();
-
-	if (specif == NULL || ents == NULL)
-	   return NULL;
-
-	if (g_d (ents) == XLITERAL) {	/* It better be a string literal */
-	   if (!is_stringlit (ents)) {
-	      error ("Illegal form of generic subprogram parameter");
-	      return NULL;
-	   }
-	   ents = find_ops (g_val (ents)-> litvalue);
-	}
-	FORSET (y, g_types (ents)) {
-	   if (is_sub (y)) {
-	      if (gen_eqsubs (actlist, specif, y))
-	         temp = join (y, temp);
-	   }
-	   else
-	   if (is_entype (y)) {
-	      if ((y == restypes (specif) && is_paramless (specif))) {
-	         if (g_d (ents) != XNAME && g_d (ents) != XSELECT)
-	            temp = join (y, temp);
-	      }
-	   }
-	}
-	del_set (g_types (ents));
-	s_types (ents, temp);
-	if (!is_singleton (temp)) {
-	   error ("Cannot solve actual generic parameter for %s\n",
-				                         g_tag (specif));
-	   return NULL;
-	}
-
-	t = td_n_name (ents);
-	if (t == NULL) {
-	   error ("Cannot solve (2) actual for generic %s\n",
-			                                g_tag (specif));
-	   return NULL;
-	}
-
-	if (is_entype (temp)) {
-	   if (g_d (t) != XNAME || g_d (g_fentity (t)) != XENUMLIT) {
-	      error ("Cannot apply %s with arbitrary construction\n",
-		                                        g_tag (specif));
-	      return NULL;
-	   }
-	}
-
-	return t;
-}
 
 

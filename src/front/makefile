@@ -3,6 +3,7 @@
 SHELL	= /bin/sh
 P	= ada_front
 CC	= gcc 
+DIR = /home/runner
 
 PRINT	=
 YACC	= ../veyacc/veyacc
@@ -13,9 +14,9 @@ PRINT	= -DPRINTF
 GDB	= -ggdb
 
 #LDFLAGS	= -i 
-CFLAGS  = -w -O   $(DEBUG) $(MACH) $(PRINT) 
-LIBS	= -ll ../libvy/libvy.a ../view/viewlib.a
-#LIBS	= -ll -ly ../view/viewlib.a
+CFLAGS  = -w -O -DHUGE=127 -D_XOPEN_SOURCE=500  $(DEBUG) $(MACH) $(PRINT) 
+LIBS	= -lfl ../libvy/libvy.a ../view/viewlib.a
+#LIBS	= -lfl ../view/viewlib.a
 
 SRC	= 1A00.c	\
 	  1A02.c 	\
@@ -325,7 +326,7 @@ tags:	$(SRC)
 
 
 install:	all
-	cp $(P) /home/adacomp/lib
+	cp $(P) $(ROOT)$(DIR)
 
 cleanup:
 	rm -f *.o *.o_d meld front front_d

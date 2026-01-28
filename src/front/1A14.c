@@ -137,7 +137,7 @@ ac	s;
  */
 	while (e != NULL) {
 	   temp = g_next (e);
-	   cfree (e);
+	   free (e);
 	   e = temp;
 	}
 }

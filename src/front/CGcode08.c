@@ -166,7 +166,7 @@ listlink anchor;
 	while (anchor != NULL) {
 	   t = anchor;
 	   anchor = anchor -> alink;
-  	   cfree (t);
+  	   free (t);
 	}
 }
 

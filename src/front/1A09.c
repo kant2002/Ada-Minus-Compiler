@@ -187,7 +187,7 @@ bool	b;
 	while (x != NULL) {
 	   y = x;
 	   x = x -> forward;
-	   cfree (y);
+	   free (y);
         }
 }
 
