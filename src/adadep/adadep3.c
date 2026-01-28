@@ -192,7 +192,7 @@ bc_src_list ()
                 {
                     /* error in node sequence */
                     fprintf (stderr, "system error: unodes not in sourcefile order\n");
-                    exit ();
+                    exit (0);
                 }
             }
             cp_sf = p_sf;

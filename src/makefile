@@ -11,6 +11,6 @@ all:
 	cd h;make ${PARAM} 
 	cd front;make ${PARAM} install
 #	cd cg;make ${PARAM} install
-#	cd adadep;make ${PARAM}
+	cd adadep;make ${PARAM}
 #	cd rt;make ${PARAM}
 #	cd standard;make ${PARAM} all

@@ -26,7 +26,7 @@
 #include "adadep.h"
 
 
-int yylineno;        /* line number for the parser */
+extern int yylineno;        /* line number for the parser */
 extern char yytext[];
 #define NAMESIZE 14
 #define LNAMESIZE 50
@@ -71,7 +71,7 @@ char **argv;
                 if (argc == 0)
                 {
                     fprintf (stderr, "No argument for flag %c\n", flag);
-                    exit ();
+                    exit (0);
                 }
                 
                 switch (flag)
@@ -85,7 +85,7 @@ char **argv;
                         break;
                 default:
                          fprintf (stderr, "Illegal flag %c\n", flag);
-                         exit ();
+                         exit (0);
                 }                    
                 continue;
             }

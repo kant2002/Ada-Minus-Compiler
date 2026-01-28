@@ -103,7 +103,7 @@ srch_resw (text)
 register char * text;
 {
 	register int i;
-	register char ctext[50];
+	char ctext[50];
 
 	copylower(ctext,text);
 	for (i = 0; res_word [i]. stringrep != NULL; i++)

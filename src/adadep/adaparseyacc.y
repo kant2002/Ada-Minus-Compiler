@@ -52,13 +52,14 @@ char labelstr[50];
  */
 char outbuf[10000] = {0}, t_out[50];
 int back_patch = 0, globalf = 1, begin_unit = 1;
+extern char identstr[50];
 %}
 %%
 Compilation	:	CompilationUnit
 		|	Compilation CompilationUnit
 		;
 
-CompilationUnit	:	ContextClause Unit =
+CompilationUnit	:	ContextClause Unit
 			{
 			    back_patch = 0;
                             begin_unit = 1;
@@ -70,7 +71,7 @@ Unit		:	LibraryUnit
 		|	Subunit
 		;
 
-ContextClause	:	/* empty */ =
+ContextClause	:	/* empty */
 			{
 			    sprintf (t_out,"NC:\n");
 			    strcat (outbuf, t_out);
@@ -86,7 +87,7 @@ WithUse 	:	WithClause
 		|	UseClause 
 		;
 
-WithClause 	:	WITH IDENT =
+WithClause 	:	WITH IDENT
 			{
 			    sprintf (t_out,"W: %s\n", identstr);
 			    strcat (outbuf, t_out);
@@ -102,7 +103,7 @@ UseClause 	:	USE IDENT
 		|	UseClause COMMA IDENT
 		;
 
-LibraryUnit 	:	SubprSpec SEM_COL =
+LibraryUnit 	:	SubprSpec SEM_COL
 			{
 			    if (back_patch)
 			    {
@@ -114,28 +115,28 @@ LibraryUnit 	:	SubprSpec SEM_COL =
 			    printf (outbuf);
 			    outbuf[0] = 0;
 			}
-		|	PackageSpec SEM_COL =
+		|	PackageSpec SEM_COL
 			{
 			    sprintf (t_out,"U: PS:\n");
 			    strcat (outbuf, t_out);
 			    printf (outbuf);
 			    outbuf[0] = 0;
 			}
-		|	GenericSpec SEM_COL =
+		|	GenericSpec SEM_COL
 			{
 			    sprintf (t_out,"U: GS:\n");
 			    strcat (outbuf, t_out);
 			    printf (outbuf);
 			    outbuf[0] = 0;
 			}
-		|	GenericInstan =
+		|	GenericInstan
 			{
 			    sprintf (t_out,"U: GI:\n");
 			    strcat (outbuf, t_out);
 			    printf (outbuf);
 			    outbuf[0] = 0;
 			}
-		|	SubprBody =
+		|	SubprBody
 			{
 			    if (back_patch)
 			    {
@@ -150,7 +151,7 @@ LibraryUnit 	:	SubprSpec SEM_COL =
 		;
 
 LibraryUnitBody	:	/* SubprBody alleen wanneer een spec geweest is */
-			PackageBody =
+			PackageBody
 			{
 			    sprintf (t_out,"U: PB:\n");
 			    strcat (outbuf, t_out);
@@ -162,14 +163,14 @@ LibraryUnitBody	:	/* SubprBody alleen wanneer een spec geweest is */
 Subunit		:	SEP_LP par_path RP PSTBody
 		;
 
-PSTBody		:	PackageBody =
+PSTBody		:	PackageBody
 			{
 			    sprintf (t_out,"SU: PB:\n");
 			    strcat (outbuf, t_out);
 			    printf (outbuf);
 			    outbuf[0] = 0;
 			}
-		|	SubprBody =
+		|	SubprBody
 			{
 			    if (back_patch)
 			    {
@@ -181,7 +182,7 @@ PSTBody		:	PackageBody =
 			    printf (outbuf);
 			    outbuf[0] = 0;
  			}
-		|	TaskBody =
+		|	TaskBody
 			{
 			    sprintf (t_out,"SU: TB:\n");
 			    strcat (outbuf, t_out);
@@ -190,19 +191,19 @@ PSTBody		:	PackageBody =
 			}
 		;
 
-par_path	:	IDENT =
+par_path	:	IDENT
 			{
 			    sprintf (t_out,"SN: %s\n", identstr);
 			    strcat (outbuf, t_out);
 			}
-		| 	par_path DOT IDENT =
+		| 	par_path DOT IDENT
 			{
 			    sprintf (t_out,"SN: %s\n", identstr);
 			    strcat (outbuf, t_out);
 			}
 		;
 	
-SubprName	:	PROCEDURE IDENT =
+SubprName	:	PROCEDURE IDENT
 			{
 			    if (begin_unit || !globalf)
 			    {
@@ -213,7 +214,7 @@ SubprName	:	PROCEDURE IDENT =
 			        begin_unit = 0;
 			    }
 			}
-		|	FUNCTION IDENT =
+		|	FUNCTION IDENT
 			{
 			    if (begin_unit || !globalf)
 			    {
@@ -232,7 +233,7 @@ SubprSpec	:	SubprName
 		|	SubprName LRP RETURN IDENT
 		;
 
-SubprBody	:	SubprSpec IS DecltivePart Block =
+SubprBody	:	SubprSpec IS DecltivePart Block
 		;
 
 Block		:	BEGN SeqOfStmts EndId SEM_COL
@@ -242,7 +243,7 @@ EndId		:	END
 		|	END IDENT
 		;
 
-PackIdent	:	PACKAGE IDENT =
+PackIdent	:	PACKAGE IDENT
 			{
 			    if (begin_unit || !globalf)
 			    {
@@ -253,7 +254,7 @@ PackIdent	:	PACKAGE IDENT =
 			}
 		;
 
-PackBodyIdent	:	PACKAGE BODY IDENT =
+PackBodyIdent	:	PACKAGE BODY IDENT
 			{
 			    if (begin_unit || !globalf)
 			    {
@@ -279,7 +280,7 @@ SelCompName	:	IDENT
 		|	SelCompName DOT IDENT
 		;
 
-Generic		:	GENERIC =
+Generic		:	GENERIC
 			{
 			    if (begin_unit || !globalf)
 			    {
@@ -294,7 +295,7 @@ GenericSpec	:	Generic GenJunk SubprSpec
 		|	Generic GenJunk PackageSpec
 		;
 
-TaskIdent	:	TASK IDENT =
+TaskIdent	:	TASK IDENT
 			{
                             if (!globalf)
                             {
@@ -302,7 +303,7 @@ TaskIdent	:	TASK IDENT =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	TASK TYPE IDENT =
+		|	TASK TYPE IDENT
 			{
                             if (!globalf)
                             {
@@ -316,7 +317,7 @@ TaskSpec	:	TaskIdent IS DecltivePart EndId
 		|	TaskIdent
 		;
 
-TaskBodyIdent	:	TASK BODY IDENT =
+TaskBodyIdent	:	TASK BODY IDENT
 			{
                             if (!globalf || begin_unit)
                             {
@@ -338,7 +339,7 @@ BasDeclItems	:	BasDeclItem
 		|	BasDeclItems BasDeclItem
 		;
 
-BasDeclItem	:	SubprSpec SEM_COL =
+BasDeclItem	:	SubprSpec SEM_COL
                         {
                             if (!globalf)
                             {
@@ -346,7 +347,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	TaskSpec SEM_COL =
+		|	TaskSpec SEM_COL
 			{
 			    if (!globalf)
 			    {
@@ -354,7 +355,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	PackageSpec SEM_COL =
+		|	PackageSpec SEM_COL
 			{
 			    if (!globalf)
 			    {
@@ -362,7 +363,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	GenericInstan =
+		|	GenericInstan
 			{
 			    if (!globalf)
 			    {
@@ -370,7 +371,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	GenericSpec SEM_COL =
+		|	GenericSpec SEM_COL
 			{
 			    if (!globalf)
 			    {
@@ -380,7 +381,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 			}
 		|	UseClause SEM_COL
 		|	Body
-		|	PackIdent RENAMES  =
+		|	PackIdent RENAMES 
 			{
 			    if (!globalf)
 			    {
@@ -388,7 +389,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	SubprSpec RENAMES =
+		|	SubprSpec RENAMES
 			{
 			    if (!globalf)
 			    {
@@ -399,7 +400,7 @@ BasDeclItem	:	SubprSpec SEM_COL =
 		|	BasJunk		/* a superset indeed */
 		;
 
-Body		: 	PackageBody =
+Body		: 	PackageBody
 			{
 			    if (!globalf)
 			    {
@@ -407,7 +408,7 @@ Body		: 	PackageBody =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	SubprBody =
+		|	SubprBody
 			{
 			    if (!globalf)
 			    {
@@ -415,7 +416,7 @@ Body		: 	PackageBody =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	TaskBody =
+		|	TaskBody
 			{
 			    if (!globalf)
 			    {
@@ -423,7 +424,7 @@ Body		: 	PackageBody =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	PackBodyIdent Stub =
+		|	PackBodyIdent Stub
 			{
 			    if (!globalf)
 			    {
@@ -431,7 +432,7 @@ Body		: 	PackageBody =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	TaskBodyIdent Stub =
+		|	TaskBodyIdent Stub
 			{
 			    if (!globalf)
 			    {
@@ -439,7 +440,7 @@ Body		: 	PackageBody =
 			        strcat (outbuf, t_out);
 			    }
 			}
-		|	SubprSpec Stub =
+		|	SubprSpec Stub
 			{
 			    if (!globalf)
 			    {
@@ -469,7 +470,7 @@ BasJunk		:	RENAMES
 		|	RECORD SeqOfStmts END RECORD SEM_COL
 		|	IDENT
 		|	SEM_COL
-		|	COLON =
+		|	COLON
 			{
 			    if (!globalf)
 			    {
@@ -487,7 +488,7 @@ SeqOfStmts	:	sJunk
 		|	SeqOfStmts sJunk
 		;
 
-Declare		:	DECLARE =
+Declare		:	DECLARE
 			{
 			    if (!globalf)
 			    {

@@ -33,6 +33,8 @@
 %{
 #include "adadep.h"
 char sfname[FNAMESIZE];
+extern char identstr[50];
+int nflags;
 %}
 
 %%
@@ -43,7 +45,7 @@ Compilation	:	CompilationUnit
 CompilationUnit	:	SourceFileInd ContextClause Unit
 		;
 
-SourceFileInd	:	SOURCEFILE ident =	/* source file name */
+SourceFileInd	:	SOURCEFILE ident 	/* source file name */
 			{
 			    strcpy (sfname, $2);
 			    add_sfunit (sfname);
@@ -51,62 +53,62 @@ SourceFileInd	:	SOURCEFILE ident =	/* source file name */
 		|	/* EMPTY */
 		;
 
-ContextClause	:	NOCONTEXT =
+ContextClause	:	NOCONTEXT 
 			{
 			    new_unit ();
 			}
 		|	WithUnits
 		;
 
-WithUnits	:	WITH ident =
+WithUnits	:	WITH ident
 			{
 			    new_unit ();
 			    add_wlist ($2);
 			}
-		|	WithUnits WITH ident =
+		|	WithUnits WITH ident 
 			{
 			    add_wlist ($3);
 			}
 		;
 
-ident		:	IDENT = $$ = (int) identstr;
+ident		:	IDENT { $$ = (int) identstr; }
 		;
 
 Unit		:	StartUnit LocalUnits EndUnit
 		|	StartUnit EndUnit
 		;
 
-Spec		:	FUNCTION = nflags = NO_CHANGE; /* back patching only
-							  on global level */
-		|	PROCEDURE = nflags = NO_CHANGE;
-		|	SUBPRBODY = nflags = SB;
-		|	SUBPRSPEC = nflags = SS;
-		|	PACKSPEC = nflags = PS;
-		|	TASKSPEC = nflags = TS;
+Spec		:	FUNCTION { nflags = NO_CHANGE; }/* back patching only
+							  on global level */ 
+		|	PROCEDURE { nflags = NO_CHANGE; }
+		|	SUBPRBODY { nflags = SB; }
+		|	SUBPRSPEC { nflags = SS; }
+		|	PACKSPEC { nflags = PS; }
+		|	TASKSPEC { nflags = TS; }
 		;
 
-Body		:	PACKBODY = nflags = PB;
-		|	TASKBODY = nflags = TB;
+Body		:	PACKBODY { nflags = PB; }
+		|	TASKBODY { nflags = TB; }
 		;
 
-StartUnit	:	Spec ident = add_uname ( $2, nflags);
-		|	GENERIC Spec ident = add_uname ($3, nflags | GNRC);
-		|	Body ident = add_uname ($2, nflags);
-		|	FullParName Spec ident = add_uname ($3, nflags | SU);
-		|	FullParName Body ident = add_uname ($3, nflags | SU);
+StartUnit	:	Spec ident { add_uname ( $2, nflags); }
+		|	GENERIC Spec ident { add_uname ($3, nflags | GNRC); }
+		|	Body ident { add_uname ($2, nflags); }
+		|	FullParName Spec ident { add_uname ($3, nflags | SU); }
+		|	FullParName Body ident { add_uname ($3, nflags | SU); }
 		;
 
-LStartUnit	:	Spec ident = $$ = $2;
-		|	GENERIC Spec ident = $$ = $3;
-		|	GENERICINSTAN ident = $$ = $2;
-		|	Body ident = $$ = $2;
+LStartUnit	:	Spec ident { $$ = $2; }
+		|	GENERIC Spec ident { $$ = $3; }
+		|	GENERICINSTAN ident { $$ = $2; }
+		|	Body ident { $$ = $2; }
 		;
 
 FullParName 	:	ParName
 		|	FullParName ParName
 		;
 
-ParName 	:	PARNAME ident = add_parlist ($2);
+ParName 	:	PARNAME ident { add_parlist ($2); }
 		;
 
 		/*
@@ -114,18 +116,18 @@ ParName 	:	PARNAME ident = add_parlist ($2);
 		 * and kinds should be adjusted.
 		 * In other cases it does not matter
 		 */
-EndUnit		:	UNIT UnitKind = adj_kind ($2);
-		|	SUBUNIT UnitKind = adj_kind ($2);
+EndUnit		:	UNIT UnitKind { adj_kind ($2); }
+		|	SUBUNIT UnitKind { adj_kind ($2); }
 		;
 
-UnitKind	:	SUBPRSPEC = $$ = SS;
-		|	PACKSPEC = $$ = NO_CHANGE;
-		|	GENERICSPEC = $$ = NO_CHANGE;
-		|	GENERICINSTAN = $$ = GI;
-		|	SUBPRBODY = $$ = SB;
-		|	PACKBODY = $$ = PB;
-		|	TASKBODY = $$ = TB;
-		|	TASKSPEC = $$ = NO_CHANGE;
+UnitKind	:	SUBPRSPEC { $$ = SS; }
+		|	PACKSPEC { $$ = NO_CHANGE; }
+		|	GENERICSPEC { $$ = NO_CHANGE; }
+		|	GENERICINSTAN { $$ = GI; }
+		|	SUBPRBODY { $$ = SB; }
+		|	PACKBODY { $$ = PB; }
+		|	TASKBODY { $$ = TB; }
+		|	TASKSPEC { $$ = NO_CHANGE; }
 		;
 
 LocalUnits	:	LocalUnit
@@ -133,14 +135,14 @@ LocalUnits	:	LocalUnit
 		;
 
 LocalUnit	:	LStartUnit LocalUnits EndLocalUnit
-		|	LStartUnit EndLocalUnit = stub_spec ($1, $2);
+		|	LStartUnit EndLocalUnit { stub_spec ($1, $2); }
 		|	DECLARE
 		;
 
-EndLocalUnit	:	LOCAL UnitKind = $$ = NO_CHANGE;
-		|	LOCAL UnitKind STUB = $$ = $2 | SU;
-		|	RENAME = $$ = NO_CHANGE;
-		|	DECLARE ident = $$ = NO_CHANGE;
+EndLocalUnit	:	LOCAL UnitKind { $$ = NO_CHANGE; }
+		|	LOCAL UnitKind STUB { $$ = $2 | SU; }
+		|	RENAME { $$ = NO_CHANGE; }
+		|	DECLARE ident { $$ = NO_CHANGE; }
 		;
 %%
 #include "adadeplex.c"
