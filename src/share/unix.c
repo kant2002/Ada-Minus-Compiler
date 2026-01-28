@@ -9,6 +9,6 @@ yyerror(s)
 register char *s;
 {
 	fprintf (stderr, s);
-	_cleanup ();
+	fflush (NULL);
 	return 1;
 }

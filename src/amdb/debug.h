@@ -52,9 +52,8 @@ extern int		pid;
 extern int		intflg;
 extern int		breakflg;
 extern int 		stepflg;
-extern long		nr_steps;
 
-extern char		*inline();
+extern char		*inline_char();
 extern char		command();
 
 extern LIBDESC		*library;

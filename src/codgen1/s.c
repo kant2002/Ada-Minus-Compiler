@@ -36,8 +36,8 @@ static unsigned Anreg[3];  /*0..8, current nr of regs per kind*/
 static unsigned n_cbra;    /*hoeveel cbranches gesplitst?*/
 static unsigned n_stck;    /*statistics: totale stackexpansie*/
 static unsigned n_stor;    /*statistics: aantal pushes per file*/
-static unsigned curfnr;    /*nummer van huidige funktie*/
-static unsigned linenr;    /*nummer van huidige regel*/
+unsigned curfnr;    /*nummer van huidige funktie*/
+unsigned linenr;    /*nummer van huidige regel*/
 
 struct snode *dupnode(),*sbranch(),*snode(),*mkleaf(),*mkmonad(),*mkdyad();
 struct snode *mkcbranc(),*mkicnode(),*mkcomop();

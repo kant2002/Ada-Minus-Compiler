@@ -55,7 +55,7 @@ unco_as (dleft, dright, vleft, vright)
 		return vleft;
 	}
 
-	cfree (vleft);
+	free (vleft);
 	vleft = (char *)malloc (_vd_vsize (dright));
 	_cp_desc (dright, dleft);
 	_assign (dleft, vright, vleft);

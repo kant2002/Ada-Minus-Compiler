@@ -146,7 +146,7 @@ char *debugunit;
 	        cls ();
 		ccommand("program");
 		prompt("enter unit (e for exit)");
-		unit_name=inline();
+		unit_name=inline_char();
 		if (! *unit_name)
 			continue;
 		if (equal (unit_name, "e"))

@@ -13,7 +13,7 @@ HEADER  = $(INCL) ptrace.h context.h mode.h
 
 #LIB	=  libman.a -ll -lc
 LIB	=  ${DAPSE}/viewlib.a -ll -lc
-CFLAGS	=  -I${DAPSE} -DVAX
+CFLAGS	=  -I${DAPSE} -DVAX -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-format
 
 FILES	= command.o context.o line.o main.o\
        	  get_tree.o lib_read.o record_man.o std.o rec_sizes.o\
