@@ -1,7 +1,7 @@
 # Ada- Compiler
 
-This is the source code for Jan van Katwijk's Ada- Compiler (pronounced: Ada
-minus).
+This is the modified source code for Jan van Katwijk's Ada- Compiler (pronounced: Ada
+minus). Goal of this project is to make the compiler to be build using modern tools.
 
 It was developed in the 1980s at the Delft University of Technology as part of
 van Katwijk's PHD project and described extensively in his
