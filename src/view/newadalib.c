@@ -7,7 +7,7 @@
 #include <pwd.h>
 
 struct passwd *getpwuid();
-char lib_name[FNAMESIZE];
+extern char lib_name[FNAMESIZE];
 
 main (argc, argv)
 int argc;

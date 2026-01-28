@@ -36,8 +36,8 @@ extern short ccun;
 extern LUN newlun, *lun;
 extern LIBDESC *ldesc;
 extern LUN *nlun;
-char prefix[];
-char lib_name[];
+extern char prefix[];
+extern char lib_name[];
 char src_name[FNAMESIZE] = {'\0'}, *p_src_name = src_name;
 
 typedef int boolean;
@@ -330,4 +330,3 @@ boolean *status;
 	wilist++;
     }
 }
-
