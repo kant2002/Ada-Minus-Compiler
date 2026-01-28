@@ -10,12 +10,12 @@ IFLAGS	= -I$(UI) -I$(O)
 
 ROOT =		/
 TARGET =	libvy.a
-DIR =		home/adacomp/lib
+DIR =		home/runner
 
 AR =		ar
 CC =		gcc
 SHELL =		/bin/sh
-CFLAGS =	-ggdb -O
+CFLAGS =	-ggdb -O -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-format
 
 ALLOBJS =	$(O)/creat_val.o $(O)/del_symbol.o $(O)/main.o $(O)/rr_bonus.o  \
 	$(O)/rr_insert.o $(O)/rr_skip.o $(O)/rr_usermess.o  \
