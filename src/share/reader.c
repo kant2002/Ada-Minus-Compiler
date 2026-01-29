@@ -175,7 +175,7 @@ void	rd_standard ()
 	f1 = f_name ("STD_PS", SPEC, &status);
 
 	if (!status) {
-	   fail ((short) mainlun, status);
+	   fail ((short) mainlun, &status);
 	   fprintf (stderr, "Cannot open package standard\n");
 	   fflush (stdout);
 	   exit (112);
