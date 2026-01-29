@@ -7,10 +7,12 @@ IFLAGS	= -I$(UI) -I$(O)
 #	@(#)MENU	1.8	86/09/11
 #
 #
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
+PARENT_DIR   := $(abspath $(THIS_DIR)/..)
 
-ROOT =		/
 TARGET =	libvy.a
-DIR =		home/runner
+DIR =		$(PARENT_DIR)
 
 AR =		ar
 CC =		gcc
@@ -26,7 +28,7 @@ all :		$(TARGET)
 		:
 
 install :	all
-		cp  $(TARGET) $(ROOT)$(DIR)/$(TARGET)
+		cp  $(TARGET) $(DIR)/$(TARGET)
 		:
 
 $(TARGET) :	$(ALLOBJS)

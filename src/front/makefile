@@ -1,9 +1,13 @@
 # makefile for ada compiler front end
 # veyacc version
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
+PARENT_DIR   := $(abspath $(THIS_DIR)/..)
+
 SHELL	= /bin/sh
 P	= ada_front
 CC	= gcc 
-DIR = /home/runner
+DIR = $(PARENT_DIR)
 
 PRINT	=
 YACC	= ../veyacc/veyacc

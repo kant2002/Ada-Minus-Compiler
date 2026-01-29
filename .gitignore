@@ -4,3 +4,14 @@
 *.acts
 src/veyacc/veyacc
 src/treetool/treetool
+src/adadep/adadep
+src/adadep/adaparse
+src/front/ada_front
+src/ada_front
+src/view/adarm
+src/view/adaload
+src/view/newadalib
+src/view/printcdb
+src/view/printlib
+src/view/printview
+src/view/rmadalib

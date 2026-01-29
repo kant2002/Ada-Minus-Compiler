@@ -5,7 +5,7 @@ CC	= cc
 YACC	= ../veyacc/veyacc
 
 CFLAGS	= -O
-LIBS	= -ll
+LIBS	= -lfl
 
 
 treetool:	y.tab.c lex.yy.c
