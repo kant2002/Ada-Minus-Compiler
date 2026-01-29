@@ -987,7 +987,9 @@ case '$':
                         tok = sgettok();
                         if (tok != IDENTIFIER)
                           error ("illegal $construct");
-                        fprintf (fpredicate, "%s", address_of(tokname));
+						static char s [20];	/* most numbers will do */
+						address_of(tokname, s);
+                        fprintf (fpredicate, "%s", s);
                         goto loop;
                       }
 		putc( '$' , fpredicate );
@@ -1137,7 +1139,9 @@ case '$':
                         tok = gettok();
                         if (tok != IDENTIFIER)
                           error ("illegal $construct");
-                        fprintf (faction, "%s", address_of(tokname));
+						static char s [20];	/* most numbers will do */
+						address_of(tokname, s);
+                        fprintf (faction, "%s", s);
                         goto loop;
                       }
 		putc( '$' , faction );

@@ -7,6 +7,7 @@
 
 
 #include "dextern"
+#include <stdarg.h>
 
 	/* variables used locally */
 
@@ -90,8 +91,10 @@ main(argc,argv)
 others(){ /* put out other arrays, copy the parsers */
 	register c, i, j;
 
+	char *parser = PARSER;
 	finput = fopen( PARSER, "r" );
-	if( finput == NULL ) error( "cannot find parser %s", PARSER );
+	printf("Using parser file: %s\n", parser);
+	if( finput == NULL ) error( "cannot find parser %s", parser );
 
 	warray( "yyr1", levprd, nprod );
 
@@ -230,14 +233,16 @@ summary(){ /* output the summary on the tty */
 	}
 
 /* VARARGS1 */
-error(s,a1) char *s; { /* write out error comment */
-	
+void error(char *sc, ...) { /* write out error comment */
+	va_list args;
+	va_start(args, sc);
 	++nerrors;
         if ( !prepfatfl ) --nerrors;
         if ( !fatfl ) fprintf( stderr, "\n warning: ");
         if ( fatfl ) fprintf( stderr, "\n fatal error: ");
-	fprintf( stderr, s,a1);
+	vfprintf( stderr, sc, args);
 	fprintf( stderr, ", line %d\n", lineno );
+	va_end(args);
 	if( !fatfl ) return;
 	summary();
 	exit(1);

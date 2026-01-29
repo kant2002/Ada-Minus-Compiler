@@ -455,11 +455,11 @@ register char *t;
 	error ("definition of attribute %s not found", t);
 }
 
-char *address_of (tag)
+void address_of (tag, s)
 register char *tag;
+char* s;
 {
 	register struct stack_elem *t;
-	static char s [20];	/* most numbers will do */
 
 	t = search_stck (tag);
 	if (t -> access.how_to_access == AS_LOCAL)

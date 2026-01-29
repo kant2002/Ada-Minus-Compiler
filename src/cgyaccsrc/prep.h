@@ -87,7 +87,6 @@ struct stack_elem {
 extern	int	tok; 
 extern	char	tokname[];
 extern	char	*infile;
-extern		error ();
 
 extern	struct att_def *lookup ();
 extern	struct att_def *new_def ();
