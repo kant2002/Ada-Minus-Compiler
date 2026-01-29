@@ -109,3 +109,5 @@ struct _arglist {
 };
 
 typedef struct _arglist ALIST;
+
+char* cur_dir ();
