@@ -746,7 +746,7 @@ FILE *f;
 sungetc(c,f) /* special ungetc: Does the ordinary thing AND removes the
 		character from the string pointed to by pp. */
 int c;
-FILE f;
+FILE *f;
 	{
 	ungetc(c,f);
 	--pp;
@@ -1441,7 +1441,7 @@ more_rule :  while (t == IDENTIFIER)
 	   }
 	else
 	   if (has_predicate[nprod]) 
-		post_adjuststack;
+		post_adjuststack();
            else adjust_stack ();
 }
 

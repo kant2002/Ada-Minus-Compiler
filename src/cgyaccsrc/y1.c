@@ -39,7 +39,6 @@ int mstates[ NSTATES ]; /* chain of overflows of term/nonterm generation lists  
 
 char predicatetext[NPROD][200];	/* predicate part for each production */
 char *pp;			/* points to a char in predicatetext  */
-int has_predicate[NPROD];	/* boolean */
 int cost[NPROD];		/* cost of each rule */
 
 
