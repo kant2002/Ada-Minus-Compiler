@@ -743,7 +743,9 @@ case '$':
                         tok = gettok();
                         if (tok != IDENTIFIER)
                           error ("illegal $construct");
-                        fprintf (faction, "%s", address_of(tokname));
+						char s [20];	/* most numbers will do */
+						address_of(tokname, s);
+                        fprintf (faction, "%s", s);
                         goto loop;
                       }
 		putc( '$' , faction );
