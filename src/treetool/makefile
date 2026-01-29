@@ -17,3 +17,6 @@ y.tab.c:	treegen.y
 lex.yy.c:	treegen.l
 	lex treegen.l
 
+clean:
+# rm -f treetool y.tab.c lex.yy.c
+	rm -f treetool

@@ -332,5 +332,6 @@ tags:	$(SRC)
 install:	all
 	cp $(P) $(ROOT)$(DIR)
 
+clean:
 cleanup:
 	rm -f *.o *.o_d meld front front_d

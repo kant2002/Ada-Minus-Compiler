@@ -69,3 +69,5 @@ tty.o		:	$(INCL)
 #rec_sizes.o	:	${SHARE}/rec_sizes.c
 #		cc -c -O -w ${CFLAGS} ${SHARE}/rec_sizes.c
 
+clean:
+	rm -f $(PROG) *.o lintlist

@@ -1,1 +1,3 @@
 Makefile text eol=lf
+*.l text eol=lf
+*.y text eol=lf

@@ -6,3 +6,6 @@ SHELL	= /bin/sh
 tree.h:	nodedefs.h
 	../treetool/treetool nodedefs.h > access.h
 	touch tree.h
+
+clean:
+	# rm -f access.h

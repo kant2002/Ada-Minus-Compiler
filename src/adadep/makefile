@@ -9,6 +9,7 @@ all:	adaparse adadep
 install:	all
 		cp adaparse adadep /usr/bin/
 
+clean:
 cleanup:
 		-rm adaparse adadep *.o adadeplex.c adadepyacc.c adaparselex.c adaparseyacc.c
 

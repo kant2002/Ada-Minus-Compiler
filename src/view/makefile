@@ -17,6 +17,7 @@ viewlib.a	:	${OBJS}
 all		:	adarm adaload newadalib \
 			printlib rmadalib printview printcdb
 			
+clean:
 cleanup		:
 		-rm -f ${PROGS} *.o core viewlib.a
 
