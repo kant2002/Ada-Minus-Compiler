@@ -2,7 +2,10 @@ SYSTEM = PC
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
 HOMEFOLDER  := $(abspath $(THIS_DIR)/../..)
-CFLAGS = -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format -ggdb -c -D${SYSTEM} -DHOMEFOLDER="\"${HOMEFOLDER}\""
+DEBUG	= -g -DDEBUG
+CFLAGS = -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format -ggdb -c \
+	-D${SYSTEM} -DHOMEFOLDER="\"${HOMEFOLDER}\"" $(DEBUG)
+	
 DAPSE = ../das
 HEADERS = ../h
 OBJS = cungen.o view1.o view2.o view3.o def_lib.o compload.o\
@@ -18,8 +21,7 @@ all		:	adarm adaload newadalib \
 			printlib rmadalib printview printcdb
 			
 clean:
-cleanup		:
-		-rm -f ${PROGS} *.o core viewlib.a
+		rm -f ${PROGS} *.o core viewlib.a
 
 libfil		:	libfil.o viewlib.a
 		cc -o libfil libfil.o viewlib.a

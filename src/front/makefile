@@ -12,7 +12,7 @@ DIR = $(PARENT_DIR)
 PRINT	=
 YACC	= ../veyacc/veyacc
 
-DEBUG	= -DDEBUG
+DEBUG	= -g -DDEBUG
 MACH	= -DPC
 PRINT	= -DPRINTF
 GDB	= -ggdb
@@ -334,4 +334,4 @@ install:	all
 
 clean:
 cleanup:
-	rm -f *.o *.o_d meld front front_d
+	rm -f *.o *.o_d meld $(P) front front_d
