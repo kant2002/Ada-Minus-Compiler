@@ -330,7 +330,7 @@ nodeattr n;
 gettempareg()
 	{ 
 	int i;
-  	for (i=0;i<=areghi;i++) if (areginfo[i]==free) 
+  	for (i=0;i<=areghi;i++) if (areginfo[i]==free_reg) 
     		{ 
 		areginfo[i]=scratch;
 		if (i>=MINAREG) saveareg[i]=TRUE;
@@ -343,7 +343,7 @@ gettempareg()
 gettempdreg()
 	{ 
 	int i;
-  	for (i=0;i<=dreghi;i++) if (dreginfo[i]==free)
+  	for (i=0;i<=dreghi;i++) if (dreginfo[i]==free_reg)
     		{ 
 		dreginfo[i]=scratch;
 		if (i>=MINDREG) savedreg[i]=TRUE;
@@ -355,7 +355,7 @@ gettempdreg()
 gettempfpreg()
 	{
 	int i;
-	for (i=0;i<=fpreghi;i++) if (fpreginfo[i]==free)
+	for (i=0;i<=fpreghi;i++) if (fpreginfo[i]==free_reg)
 		{
 		fpreginfo[i]=scratch;
 		if (i>=MINFPREG) savefpreg[i]=TRUE;
@@ -368,7 +368,7 @@ gettempfpreg()
 getareg()
 	{ 
 	int i;
-  	for (i=MINAREG;i<=areghi;i++) if (areginfo[i]==free) 
+  	for (i=MINAREG;i<=areghi;i++) if (areginfo[i]==free_reg) 
     		{ 
 		areginfo[i]=scratch;
 		saveareg[i]=TRUE;
@@ -381,7 +381,7 @@ getareg()
 getdreg()
 	{ 
 	int i;
-  	for (i=MINDREG;i<=dreghi;i++) if (dreginfo[i]==free)
+  	for (i=MINDREG;i<=dreghi;i++) if (dreginfo[i]==free_reg)
     		{ 
 		dreginfo[i]=scratch;
 		savedreg[i]=TRUE;
@@ -393,7 +393,7 @@ getdreg()
 getfpreg()
 	{
 	int i;
-	for (i=MINFPREG;i<=fpreghi;i++) if (fpreginfo[i]==free)
+	for (i=MINFPREG;i<=fpreghi;i++) if (fpreginfo[i]==free_reg)
 		{
 		fpreginfo[i]=scratch;
 		savefpreg[i]=TRUE;
@@ -405,7 +405,7 @@ getfpreg()
 dregavailable()
 	{
 	int i;
-	for (i=MINDREG;i<=dreghi;i++) if (dreginfo[i]==free) return(TRUE);
+	for (i=MINDREG;i<=dreghi;i++) if (dreginfo[i]==free_reg) return(TRUE);
 	return(FALSE);
 	}
 
@@ -413,21 +413,21 @@ freeareg(a)
 int a;
 	{ 
 	if (!RANGETEST(a,0,6)) error("areg out of range in freeareg!");
-	if (RANGETEST(a,0,5) && areginfo[a]!=regvar) areginfo[a]=free; 
+	if (RANGETEST(a,0,5) && areginfo[a]!=regvar) areginfo[a]=free_reg; 
 	}
 
 freedreg(d) 
 int d;
 	{ 
 	if (!RANGETEST(d,0,7)) error("in freedreg!");
-	if (dreginfo[d]!=regvar) dreginfo[d]=free; 
+	if (dreginfo[d]!=regvar) dreginfo[d]=free_reg; 
 	}
 	
 freefpreg(fp)
 int fp;
 	{
 	if (!RANGETEST(fp,0,7)) error("in freefpreg!");
-	if (fpreginfo[fp]!=regvar) fpreginfo[fp]=free;
+	if (fpreginfo[fp]!=regvar) fpreginfo[fp]=free_reg;
 	}
 
 useareg(a) 
@@ -464,9 +464,9 @@ free_all_registers()
 	{ 
 	int i;
 	if (!RANGETEST(fpreghi,0,7)) error("in free_all_registers!");
-  	for (i=0; i<=dreghi; i++) dreginfo[i]=free;
-	for (i=0; i<=areghi; i++) areginfo[i]=free;
-	for (i=0; i<=fpreghi;i++) fpreginfo[i]=free;
+  	for (i=0; i<=dreghi; i++) dreginfo[i]=free_reg;
+	for (i=0; i<=areghi; i++) areginfo[i]=free_reg;
+	for (i=0; i<=fpreghi;i++) fpreginfo[i]=free_reg;
 	}
 
 clear_reg_usage()

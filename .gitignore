@@ -2,6 +2,7 @@
 *.o
 *.tmp
 *.acts
+*.preds
 src/veyacc/veyacc
 src/treetool/treetool
 src/adadep/adadep
@@ -15,3 +16,8 @@ src/view/printcdb
 src/view/printlib
 src/view/printview
 src/view/rmadalib
+src/cgyaccsrc/cgyacc
+cgyacc
+adalibrary
+cg68
+src/codgen2/cgy.tab.c

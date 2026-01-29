@@ -90,3 +90,4 @@ extern		error ();
 extern	struct att_def *lookup ();
 extern	struct att_def *new_def ();
 
+extern void address_of (char *tag, char* s);

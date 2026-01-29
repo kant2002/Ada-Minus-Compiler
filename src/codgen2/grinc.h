@@ -137,7 +137,7 @@ extern	int exchanged;		/* boolean; indicates whether the two
 
 /**** Register stuff ****/
 
-	enum reginfotype { free, scratch, regvar };
+	enum reginfotype { free_reg, scratch, regvar };
 extern	enum reginfotype dreginfo[8], areginfo[6], fpreginfo[8];
 extern	int savedreg[8], saveareg[6], savefpreg[8];  /* boolean */
 
