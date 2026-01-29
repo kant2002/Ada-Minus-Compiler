@@ -10,7 +10,7 @@
 
 	/* location of the parser text file */
 #ifndef	PARSER
-#define	PARSER	"/home/adacomp/src/veyacc/veyaccpar"
+#define	PARSER	HOMEFOLDER "/src/veyacc/veyaccpar"
 #endif	PARSER
 	/* basic size of the Yacc implementation */
 # define HUGE

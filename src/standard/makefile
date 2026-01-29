@@ -1,5 +1,8 @@
-SHELL	= /bin/sh
-LIB	= /home/adacomp/lib
+SHELL	= /bin/shTHIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
+HOMEFOLDER  := $(abspath $(THIS_DIR)/../..)
+LIB	= ${HOMEFOLDER}/lib
 B	= /bin/cp
 A	= /bin/cat
 F	= ada_front

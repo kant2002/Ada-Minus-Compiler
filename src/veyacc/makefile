@@ -2,6 +2,9 @@ CS	= .
 CI	= .
 UI	= /usr/include
 O	= ../obj
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
+HOMEFOLDER  := $(abspath $(THIS_DIR)/../..)
 #IFLAGS	= -I$(CI) -I$(UI) -I$(O) 
 #
 #	MENU				851001 EVK
@@ -14,7 +17,7 @@ TARGET =	veyacc
 DIR =		usr/bin
 
 SHELL =		/bin/sh
-CFLAGS =	-O -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format
+CFLAGS =	-O -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format -DHOMEFOLDER="\"${HOMEFOLDER}\""
 
 ALLOBJS =	$(O)/y1.o $(O)/y2.o $(O)/y3.o $(O)/y4.o $(O)/y5.o $(O)/y6.o  \
 	$(O)/y7.o $(O)/y8.o 

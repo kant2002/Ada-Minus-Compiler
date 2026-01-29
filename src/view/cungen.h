@@ -1,7 +1,7 @@
 /*
  * Header file voor cun generatie
  */
-#define LIJST_DIR	"/home/adacomp/lib/lijst"
+#define LIJST_DIR	"/mnt/d/d/github/Ada-Minus-Compiler/lib/lijst"
 #define LOCK_FILE	"/tmp/cunlockfile"
 #define MAXNUM		1024
 /* bij een MAXNUM van 1024 zijn er 0-6 files mogelijk */

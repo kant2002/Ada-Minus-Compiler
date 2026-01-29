@@ -1,5 +1,5 @@
 /*#define CDB "cdb"*/
-#define CDB "/home/adacomp/lib/cdb"
+#define CDB HOMEFOLDER "/lib/cdb"
 
 struct cdb
 {

@@ -1,5 +1,8 @@
 SYSTEM = PC
-CFLAGS = -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format -ggdb -c -D${SYSTEM}
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
+HOMEFOLDER  := $(abspath $(THIS_DIR)/../..)
+CFLAGS = -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format -ggdb -c -D${SYSTEM} -DHOMEFOLDER="\"${HOMEFOLDER}\""
 DAPSE = ../das
 HEADERS = ../h
 OBJS = cungen.o view1.o view2.o view3.o def_lib.o compload.o\
