@@ -3,6 +3,7 @@ Structure of the source files
 
 I did not document the actual purpose of each component for now.
 
+
 - Folder lib
   Helpful binaries for codegen1. From what I see only ldfile should be there
 - Folder src\codegen1
@@ -39,3 +40,21 @@ I did not document the actual purpose of each component for now.
   Static library std.a
 - Folder src\amdb
   Executables amdb
+
+| Folder name          | Folder purpose | List of artifacts |
+|----------------------|---------------|-------------------|
+| lib                  | Helpful binaries for codegen1.  | Executable ldfile |
+| src/codegen1         |               | s68 |
+| src/cgyaccsrc        |               | cgyacc |
+| src/codegen2         |               | cg68 |
+| src/veyacc           |               | veyacc |
+| src/libvy            |               | libvy.a |
+| src/treetool         |               | treetool |
+| src/view             |               | viewlib.a, adarm, newadalib, rmadalib, adaload, printlib, printview, printcdb |
+| src/h                |               | tree.h |
+| src/front            |               | ada_front |
+| src/cg               | Code generation | ada_cg (missing folder) |
+| src/adadep           |               | adaparse, adadep |
+| src/rt               |               | daslib.a, dasexit.o, dasrt0.o, std_ps.o, dasrt0.s, dastaskrt0.s, std_ps.t |
+| src/standard         |               | std.a |
+| src/amdb             |               | amdb |

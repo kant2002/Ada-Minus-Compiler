@@ -1,0 +1,6 @@
+*.a
+*.o
+*.tmp
+*.acts
+src/veyacc/veyacc
+src/treetool/treetool
