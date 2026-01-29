@@ -19,8 +19,6 @@ extern int type;
 
 extern unsigned Amaxreg[3];  /*0..8, number of regs per kind*/
 extern unsigned Aminreg[3];  /*0..8, minimum nr of regs per kind*/
-extern unsigned curfnr;      /*nummer van huidige funktie*/
-extern unsigned linenr;
 
 char  *filena;
 
