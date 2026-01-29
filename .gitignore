@@ -21,3 +21,5 @@ cgyacc
 adalibrary
 cg68
 src/codgen2/cgy.tab.c
+s68
+src/codgen2/lex.yy.c

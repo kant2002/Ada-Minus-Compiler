@@ -1,5 +1,9 @@
 #ms68
 #19880715/wjvg
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+THIS_DIR     := $(dir $(abspath $(THIS_MAKEFILE)))
+PARENT_DIR  := $(abspath $(THIS_DIR)/..)
+
 CFLAGS = -O0 -g -DDEBUG
 CFLAGS += -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-endif-labels -Wno-return-type -Wno-pointer-to-int-cast -Wno-int-conversion -Wno-format-overflow -Wno-incompatible-pointer-types -Wno-format
 
@@ -16,7 +20,7 @@ s68:	c.o d.o def68.o defs68.o hnode.o hsize.o i.o m.o o.o opz.o p.o \
 	eopti.o		\
 	eopen.o		\
 	enuexp.o
-	ld /lib/ldfile -e start \
+	ld /lib64/ld-linux-x86-64.so.2 -e start \
 	  c.o d.o def68.o defs68.o hnode.o hsize.o i.o m.o o.o opz.o p.o \
 	  s.o x68z.o extra.o \
 	dupstr.o	\
@@ -32,6 +36,6 @@ s68:	c.o d.o def68.o defs68.o hnode.o hsize.o i.o m.o o.o opz.o p.o \
 	cc -c ${CFLAGS} -Df68000 -Don68000 $*.c
 
 install:	s68
-	cp s68 /usr/bin/tud
+	cp s68 ${PARENT_DIR}
 
 #end
